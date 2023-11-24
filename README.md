@@ -1,6 +1,6 @@
 # OCMFET client
 
-Client application for both the **zero** and **feedback** versions of the acquisition system developed by Elbatech. The client is intended to be run on a PC and it is used to control the acquisition system and display the acquired data in real time, communicating with the server application ([ocmfet-server-zero](https://github.com/fabio-terranova/ocmfet-server-zero) or [ocmfet-server-feedback]([ocmfet-server-zero](https://github.com/fabio-terranova/ocmfet-server-feedback))) running on the Raspberry Pi.
+Client application for both the **zero** and **feedback** versions of the acquisition system developed by Elbatech. The client is intended to be run on a PC and it is used to control the acquisition system and display the acquired data in real time, communicating with the server application ([ocmfet-server-zero](https://github.com/fabio-terranova/ocmfet-server-zero) or [ocmfet-server-feedback]([ocmfet-server-zero](https://github.com/fabio-terranova/ocmfet-server-feedback)) running on the Raspberry Pi.
 
 ## Index
 
