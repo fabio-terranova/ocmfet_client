@@ -19,30 +19,31 @@ pg.setConfigOption('background', 'w')
 pg.setConfigOption('foreground', 'k')
 
 version = "1.0"
-window_title = f"OCMFET client {version} - Fabio Terranova & Elbatech"
+window_title = f"OCMFET client {version} - Fabio Terranova"
 
 BUF_LEN = 32
 
-time_ranges = ["100 ms", "1 s", "10 s", "30 s", "1 min"]
-sample_rates = ["10 kHz", "20 kHz", "30 kHz", "40 kHz", "50 kHz"]
+time_ranges = ["1 s", "10 s", "30 s", "1 min"]
+sample_rates = ["10 kHz", "22.7 kHz", "30 kHz", "40 kHz", "50 kHz"]
 
 default = {
     "server_ip": "192.168.137.240",
     "msg_port": 8888,
     "data_port": 8889,
-    "T2": 50,
+    "T2": 44,
     "n_channels": 2,
-    "sample_rate": "20 kHz",
+    "sample_rate": "22.7 kHz",
     "time_range": "1 s"
 }
 
 
 def bytes2samples(data):
-    most_sig = np.array(data[0::2])
-    least_sig = np.array(data[1::2])
+    most_sig = np.array(data[0::2]).astype(np.ushort)
+    least_sig = np.array(data[1::2]).astype(np.ushort)
 
-    d = np.bitwise_or(np.left_shift(most_sig, 8), least_sig)
-    r = (d + 0x8000).astype(np.uint16)
+    d = np.left_shift(most_sig, 8) + least_sig
+    # r = (unsigned short)((int)(d + 0x8000));
+    r = (d + 0x8000)
     f = r * 10 / 65536.0 - 5
     I = f * 0.2 / 1e6  # uA to A
 
@@ -125,10 +126,6 @@ class PlotWidget(pg.PlotWidget):
         self.curve.setData(self.data_queue)
 
         self.ptr += len(data)
-
-    def update_data(self, data):
-        self.data_queue = data
-        self.curve.setData(self.data_queue)
 
 
 class UDPClientGUI(QMainWindow):
@@ -244,13 +241,17 @@ class UDPClientGUI(QMainWindow):
             self.plot_widgets[i].setLabel(
                 "left", f"({i+1}) " + mathify(f"&Delta;I{sub('ds')}"), "A")
 
+        self.clear_plot_button = QPushButton("Clear plot", self)
+        self.clear_plot_button.clicked.connect(self.clear_plot)
         self.pause_streaming_button = QPushButton("Pause", self)
         self.pause_streaming_button.setEnabled(False)
         self.pause_streaming_button.clicked.connect(self.pause_stream)
         self.sample_rate_label = QLabel("Sample rate", self)
         self.sample_rate_combo = QComboBox(self)
         self.sample_rate_combo.addItems(sample_rates)
-        self.sample_rate_combo.setCurrentIndex(sample_rates.index("20 kHz"))
+        self.sample_rate_combo.setCurrentIndex(sample_rates.index(
+            default["sample_rate"]
+        ))
         self.sample_rate_combo.currentIndexChanged.connect(
             self.update_sample_rate)
         self.time_range_label = QLabel("Time range", self)
@@ -305,6 +306,7 @@ class UDPClientGUI(QMainWindow):
             self.right_layout.addWidget(self.plot_widgets[i])
         self.time_layout = QHBoxLayout()
         self.time_layout.addStretch()
+        self.time_layout.addWidget(self.clear_plot_button)
         self.time_layout.addWidget(self.pause_streaming_button)
         self.time_layout.addWidget(self.sample_rate_label)
         self.time_layout.addWidget(self.sample_rate_combo)
@@ -400,7 +402,6 @@ class UDPClientGUI(QMainWindow):
         self.send_command(f"tag {tag}")
 
     def update_console(self, msg):
-        # log = "[{}] {}".format(time.strftime("%H:%M:%S"), msg)
         log = f"-> {msg}"
         self.console.append(log)
 
@@ -412,6 +413,12 @@ class UDPClientGUI(QMainWindow):
 
         for i in range(self.n_channels):
             self.plot_widgets[i].update_scroll(points[i::self.n_channels])
+
+    def clear_plot(self):
+        for i in range(self.n_channels):
+            self.plot_widgets[i].data_queue.clear()
+            self.plot_widgets[i].ptr = 0
+            self.plot_widgets[i].curve.setData(self.plot_widgets[i].data_queue)
 
     def pause_stream(self):
         if self.data_thread.listening:
@@ -488,6 +495,7 @@ class DataListener(QThread):
 if __name__ == '__main__':
     # Run Qt GUI
     app = QApplication(sys.argv)
+
     # Usage: client.py [server_ip]:[msg_port]
     if len(sys.argv) > 1:
         server_ip, msg_port = sys.argv[1].split(":")
