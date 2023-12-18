@@ -38,12 +38,11 @@ default = {
 
 
 def bytes2samples(data):
-    most_sig = np.array(data[0::2]).astype(np.ushort)
-    least_sig = np.array(data[1::2]).astype(np.ushort)
+    most_sig = data[0::2]
+    least_sig = data[1::2]
 
-    d = np.left_shift(most_sig, 8) + least_sig
-    # r = (unsigned short)((int)(d + 0x8000));
-    r = (d + 0x8000)
+    d = (np.left_shift(most_sig, 8) + least_sig)
+    r = np.uint16(d + 0x8000)  # r = (unsigned short)((int)(d + 0x8000));
     f = r * 10 / 65536.0 - 5
     I = f * 0.2 / 1e6  # uA to A
 
@@ -467,7 +466,7 @@ class MessageListener(QThread):
 
 
 class DataListener(QThread):
-    received_data = pyqtSignal(list)
+    received_data = pyqtSignal(np.ndarray)
 
     def __init__(self, data_socket):
         super().__init__()
@@ -488,7 +487,7 @@ class DataListener(QThread):
                 self.data_buffer.extend(data)
 
                 if len(self.data_buffer) >= self.bytes_to_emit:
-                    self.received_data.emit(list(self.data_buffer))
+                    self.received_data.emit(np.array(self.data_buffer))
                     self.data_buffer.clear()
 
 
