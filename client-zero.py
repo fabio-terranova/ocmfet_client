@@ -27,7 +27,7 @@ time_ranges = ["1 s", "10 s", "30 s", "1 min"]
 sample_rates = ["5 kHz", "20 kHz", "30 kHz", "40 kHz", "50 kHz"]
 
 default = {
-    "server_ip": "192.168.137.240",
+    "server_ip": "192.168.137.100",
     "msg_port": 8888,
     "data_port": 8889,
     "T2": 200,
