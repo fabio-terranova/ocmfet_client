@@ -42,7 +42,7 @@ def bytes2samples(data):
     least_sig = data[1::2]
 
     d = (np.left_shift(most_sig, 8) + least_sig)
-    r = np.uint16(d + 0x8000)  # r = (unsigned short)((int)(d + 0x8000));
+    r = np.double(np.uint16(np.int16(d + 0x8000)))  # r = (unsigned short)((int)(d + 0x8000));
     f = r * 10 / 65536.0 - 5
     I = f * 0.2 / 1e6  # uA to A
 
