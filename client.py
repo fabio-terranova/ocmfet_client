@@ -1,5 +1,5 @@
 # Fabio Terranova - 2023
-# Client for the OCMFET acquisition system developed by Elbatech (feedback version)
+# Client for the OCMFET acquisition system developed by Elbatech
 
 import socket
 import sys
@@ -16,39 +16,68 @@ from PyQt5.QtWidgets import (QApplication, QCheckBox, QComboBox,
                              QWidget)
 
 # pg.setConfigOptions(useOpenGL=True)
-# pg.setConfigOption('antialias', True)
+pg.setConfigOption('antialias', True)
 pg.setConfigOption('background', 'w')
 pg.setConfigOption('foreground', 'k')
 
-version = "1.1"
+version = "2.0"
 window_title = f"OCMFET client {version} - Fabio Terranova"
 
-BUF_LEN = 32
-
 time_ranges = ["1 s", "10 s", "30 s", "1 min"]
-sample_rates = ["10 kHz", "22.7 kHz", "30 kHz", "40 kHz", "50 kHz"]
+sample_rates = ["5 kHz", "10 kHz", "22.7 kHz", "30 kHz", "40 kHz", "50 kHz"]
 
 default = {
     "server_ip": "192.168.137.240",
     "msg_port": 8888,
     "data_port": 8889,
     "T2": 44,  # us
+    "BUF_LEN": 32,
     "n_channels": 2,
     "timer": 600,  # seconds
     "max_record_time": 300,  # seconds
     "sample_rate": "22.7 kHz",
-    "time_range": "1 s"
+    "time_range": "10 s"
+}
+
+default_z = {
+    "server_ip": "192.168.137.240",
+    "T2": 200,  # us
+    "BUF_LEN": 6,
+    "sample_rate": "5 kHz",
 }
 
 
-def bytes2samples(data):
-    most_sig = data[0::2]
-    least_sig = data[1::2]
+def bytes2samples(data, zero=False):
+    if zero:
+        # 2Bytes(MSB2|MSB1)|2Bytes(LSW1)|2Bytes(LSW2)|...
 
-    d = (np.left_shift(most_sig, 8) + least_sig)
-    r = np.double(np.uint16(np.int16(d + 0x8000)))
-    f = r * 10 / 65536.0 - 5
-    I = f * 0.2 / 1e6  # uA to A
+        msb2 = np.array(data[0::6])
+        msb1 = np.array(data[1::6])
+        lsw1 = np.bitwise_or(np.left_shift(
+            np.array(data[2::6]), 8), np.array(data[3::6]))
+        lsw2 = np.bitwise_or(np.left_shift(
+            np.array(data[4::6]), 8), np.array(data[5::6]))
+
+        p1 = np.bitwise_or(np.left_shift(msb1, 16), lsw1)
+        p2 = np.bitwise_or(np.left_shift(msb2, 16), lsw2)
+
+        # alternate p1 and p2
+        points = np.empty((2*len(p1),), dtype=p1.dtype)
+        points[0::2] = p1
+        points[1::2] = p2
+
+        # Two's complement
+        points[points >= 0x7FFFFF] -= 0x1000000
+
+        I = 5/0x7FFFFF*points/500000
+    else:
+        most_sig = data[0::2]
+        least_sig = data[1::2]
+
+        d = (np.left_shift(most_sig, 8) + least_sig)
+        r = np.double(np.uint16(np.int16(d + 0x8000)))
+        f = r * 10 / 65536.0 - 5
+        I = f * 0.2 / 1e6  # uA to A
 
     return I
 
@@ -129,11 +158,10 @@ class PlotWidget(pg.PlotWidget):
 
 
 class UDPClientGUI(QMainWindow):
-    def __init__(self,
-                 server_ip=default["server_ip"],
-                 msg_port=default["msg_port"],
-                 data_port=default["data_port"]):
+    def __init__(self, server_ip, msg_port, data_port, zero=False):
         super().__init__()
+
+        self.zero = zero
         self.T2 = default["T2"]
         self.fs = string2hertz(default["sample_rate"])
         self.n_channels = default["n_channels"]
@@ -152,7 +180,8 @@ class UDPClientGUI(QMainWindow):
 
         # Create two threads to listen for messages and data
         self.msg_thread = MessageListener(self.msg_socket)
-        self.data_thread = DataListener(self.data_socket)
+        self.data_thread = DataListener(self.data_socket, default["sample_rate"],
+                                        default["time_range"], default["BUF_LEN"])
         self.msg_thread.received_msg.connect(self.update_console)
         self.data_thread.received_data.connect(self.update_data)
         # self.data_thread.received_data.connect(self.print_data)
@@ -179,7 +208,10 @@ class UDPClientGUI(QMainWindow):
             self.Ids_controls[i]["spin_box"].setDecimals(2)
             self.Ids_controls[i]["spin_box"].setValue(0)
             self.Ids_controls[i]["spin_box"].setPrefix("-")
-            self.Ids_controls[i]["spin_box"].setSuffix(" \u03BCA")
+            if self.zero:
+                self.Ids_controls[i]["spin_box"].setSuffix(" V")
+            else:
+                self.Ids_controls[i]["spin_box"].setSuffix(" \u03BCA")
             self.Ids_controls[i]["set_button"] = QPushButton("Set", self)
             self.Ids_controls[i]["reset_button"] = QPushButton("Reset", self)
 
@@ -193,11 +225,18 @@ class UDPClientGUI(QMainWindow):
             self.Vg_controls[i]["set_button"] = QPushButton("Set", self)
             self.Vg_controls[i]["reset_button"] = QPushButton("Reset", self)
 
-            self.Ids_controls[i]["set_button"].clicked.connect(
-                lambda _, channel=i: self.set_Ids(
-                    channel, self.Ids_controls[channel]["spin_box"].value()))
-            self.Ids_controls[i]["reset_button"].clicked.connect(
-                lambda _, channel=i: self.reset_Ids(channel))
+            if self.zero:
+                self.Ids_controls[i]["set_button"].clicked.connect(
+                    lambda _, channel=i: self.set_Vs(
+                        channel, self.Ids_controls[channel]["spin_box"].value()))
+                self.Ids_controls[i]["reset_button"].clicked.connect(
+                    lambda _, channel=i: self.reset_Vs(channel))
+            else:
+                self.Ids_controls[i]["set_button"].clicked.connect(
+                    lambda _, channel=i: self.set_Ids(
+                        channel, self.Ids_controls[channel]["spin_box"].value()))
+                self.Ids_controls[i]["reset_button"].clicked.connect(
+                    lambda _, channel=i: self.reset_Ids(channel))
 
             self.Vg_controls[i]["set_button"].clicked.connect(
                 lambda _, channel=i: self.set_Vg(
@@ -261,7 +300,11 @@ class UDPClientGUI(QMainWindow):
                 1e3/(self.T2)*string2ms(default["time_range"]))
             self.plot_widgets[i].setMinimumSize(400, 200)
             self.plot_widgets[i].setLabel("bottom", "Time", "Samples")
-            self.plot_widgets[i].setLabel(
+            if self.zero:
+                self.plot_widgets[i].setLabel(
+                "left", f"({i+1}) " + mathify(f"I{sub('ds')}"), "A")
+            else:
+                self.plot_widgets[i].setLabel(
                 "left", f"({i+1}) " + mathify(f"&Delta;I{sub('ds')}"), "A")
 
         self.recording_time_label = QLabel("[00:00:00]", self)
@@ -282,7 +325,8 @@ class UDPClientGUI(QMainWindow):
         self.time_range_label = QLabel("Time range", self)
         self.time_range_combo = QComboBox(self)
         self.time_range_combo.addItems([r for r in time_ranges])
-        self.time_range_combo.setCurrentIndex(time_ranges.index("1 s"))
+        self.time_range_combo.setCurrentIndex(
+            time_ranges.index(default["time_range"]))
         self.time_range_combo.currentIndexChanged.connect(
             self.update_time_range)
 
@@ -308,7 +352,10 @@ class UDPClientGUI(QMainWindow):
 
             layout = QGridLayout()
 
-            layout.addWidget(QLabel("I" + sub("DS")), 0, 0)
+            if self.zero:
+                layout.addWidget(QLabel("V" + sub("S")), 0, 0)
+            else:
+                layout.addWidget(QLabel("I" + sub("DS")), 0, 0)
             layout.addWidget(self.Ids_controls[i]["spin_box"], 1, 0)
             layout.addWidget(self.Ids_controls[i]["set_button"], 2, 0)
             layout.addWidget(self.Ids_controls[i]["reset_button"], 3, 0)
@@ -400,6 +447,13 @@ class UDPClientGUI(QMainWindow):
     def reset_Vg(self, channel):
         self.Vg_controls[channel]["spin_box"].setValue(0)
         self.send_command(f"vg{channel+1} 0")
+
+    def set_Vs(self, channel, value):
+        self.send_command(f"vs{channel+1} {value}")
+
+    def reset_Vs(self, channel):
+        self.Vg_controls[channel]["spin_box"].setValue(0)
+        self.send_command(f"vs{channel+1} 0")
 
     def send_user_command(self):
         command = self.line_edit.toPlainText()
@@ -536,13 +590,14 @@ class MessageListener(QThread):
 class DataListener(QThread):
     received_data = pyqtSignal(np.ndarray)
 
-    def __init__(self, data_socket):
+    def __init__(self, data_socket, sample_rate, time_range, BUF_LEN):
         super().__init__()
         self.listening = True
         self.socket = data_socket
-        fs = string2hertz(default["sample_rate"])
-        tr = string2ms(default["time_range"])
-        self.update_bytes_to_emit(fs, tr)
+        self.BUF_LEN = BUF_LEN
+        self.fs = string2hertz(sample_rate)
+        self.tr = string2ms(time_range)
+        self.update_bytes_to_emit(self.fs, self.tr)
 
     def update_bytes_to_emit(self, fs, tr):
         self.bytes_to_emit = int(128*fs*tr*1e-7)*4
@@ -550,7 +605,7 @@ class DataListener(QThread):
 
     def run(self):
         while True:
-            data, _ = self.socket.recvfrom(BUF_LEN)
+            data, _ = self.socket.recvfrom(self.BUF_LEN)
             if self.listening:
                 self.data_buffer.extend(data)
 
@@ -563,13 +618,21 @@ if __name__ == '__main__':
     # Run Qt GUI
     app = QApplication(sys.argv)
 
-    # Usage: client.py [server_ip]:[msg_port]
+    # Usage: client.py [-zero]
+    zero = False
     if len(sys.argv) > 1:
-        server_ip, msg_port = sys.argv[1].split(":")
-        msg_port = int(msg_port)
-        client = UDPClientGUI(server_ip, msg_port, msg_port+1)
-    else:
-        client = UDPClientGUI()
+        if sys.argv[1] == "-zero":
+            zero = True
+
+    if zero:
+        # Update default values
+        default.update(default_z)
+
+    server_ip = default["server_ip"]
+    msg_port = default["msg_port"]
+    data_port = default["data_port"]
+
+    client = UDPClientGUI(server_ip, msg_port, data_port, zero)
 
     client.show()
     sys.exit(app.exec_())

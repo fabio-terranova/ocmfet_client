@@ -35,16 +35,8 @@ pip install -r requirements.txt
 
 ## Usage
 
-Depending on the version of the acquisition system, the client can from one of the following commands:
+Depending on the version of the acquisition system, the client can be run with or without the `-zero` argument. The client can be run using the following command:
 
 ```sh
-py client-zero.py <server_ip>:<server_port>
+py client.py [-zero]
 ```
-
-```sh
-py client-feedback.py <server_ip>:<server_port>
-```
-
-where `<server_ip>` and `<server_port>` are the IP address and the communication port of the server application running on the Raspberry Pi.
-
-If no arguments are provided, the client will try to connect to the server at the default address and port defined inside the scripts.
