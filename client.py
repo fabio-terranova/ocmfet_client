@@ -130,7 +130,6 @@ class PlotWidget(pg.PlotWidget):
 
         self.fs = string2hertz(default["sample_rate"])
         self.ms = string2ms(default["time_range"])
-        print(self.fs, self.ms)
         self.init_data(self.fs, self.ms)
 
         self.curve = self.plot()
@@ -301,7 +300,11 @@ class UDPClientGUI(QMainWindow):
                 1e3/(self.T2)*string2ms(default["time_range"]))
             self.plot_widgets[i].setMinimumSize(400, 200)
             self.plot_widgets[i].setLabel("bottom", "Time", "Samples")
-            self.plot_widgets[i].setLabel(
+            if self.zero:
+                self.plot_widgets[i].setLabel(
+                "left", f"({i+1}) " + mathify(f"I{sub('ds')}"), "A")
+            else:
+                self.plot_widgets[i].setLabel(
                 "left", f"({i+1}) " + mathify(f"&Delta;I{sub('ds')}"), "A")
 
         self.recording_time_label = QLabel("[00:00:00]", self)
