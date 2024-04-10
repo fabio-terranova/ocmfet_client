@@ -530,7 +530,7 @@ class UDPClientGUI(QMainWindow):
         self.console.append(str(data))
 
     def update_data(self, data):
-        points = bytes2samples(data)
+        points = bytes2samples(data, self.zero)
 
         for i in range(self.n_channels):
             self.plot_widgets[i].update_scroll(points[i::self.n_channels])
