@@ -7,30 +7,29 @@ from PyQt5.QtCore import QThread, pyqtSignal
 class MessageListener(QThread):
     received_msg = pyqtSignal(str)
 
-    def __init__(self, msg_socket):
+    def __init__(self, msg_socket, msg_len):
         super().__init__()
         self.socket = msg_socket
+        self.msg_len = msg_len
 
     def run(self):
         while True:
-            self.msg, _ = self.socket.recvfrom(512)
+            self.msg, _ = self.socket.recvfrom(self.msg_len)
             self.received_msg.emit(self.msg.decode())
 
 
 class DataListener(QThread):
     received_data = pyqtSignal(np.ndarray)
 
-    def __init__(self, data_socket, sample_rate, time_range, BUF_LEN):
+    def __init__(self, data_socket, BUF_LEN, bytes_to_emit):
         super().__init__()
         self.listening = True
         self.socket = data_socket
-        self.fs = sample_rate
-        self.tr = time_range
         self.BUF_LEN = BUF_LEN
-        self.update_bytes_to_emit(self.fs, self.tr)
+        self.update_bytes_to_emit(bytes_to_emit)
 
-    def update_bytes_to_emit(self, fs, tr):
-        self.bytes_to_emit = int(128*fs*tr)
+    def update_bytes_to_emit(self, n_bytes):
+        self.bytes_to_emit = int(n_bytes)
         # print(f"Bytes to emit: {self.bytes_to_emit}")
         self.data_buffer = deque(maxlen=self.bytes_to_emit)
 

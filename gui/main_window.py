@@ -1,14 +1,13 @@
-import socket
-
+import numpy as np
 import pyqtgraph as pg
 from PyQt5.QtCore import QTimer
-from PyQt5.QtWidgets import (QCheckBox, QComboBox, QDoubleSpinBox, QGridLayout,
-                             QGroupBox, QHBoxLayout, QLabel, QLineEdit,
-                             QMainWindow, QPushButton, QSpinBox, QTextEdit,
-                             QVBoxLayout, QWidget)
+from PyQt5.QtWidgets import (QCheckBox, QComboBox, QGroupBox, QHBoxLayout,
+                             QLabel, QLineEdit, QMainWindow, QPushButton,
+                             QSpinBox, QTextEdit, QVBoxLayout, QWidget)
 
-from gui.widgets import MultiGraph
-from network.listeners import DataListener, MessageListener
+from gui.multi_graph import MultiGraph
+from gui.ocmfet_controller import ControllerWidget
+from network.udp_client import UDPMsgDataClient
 from utils.data_processing import (bytes2samples, khertz2string, s2hhmmss,
                                    s2string, sub)
 
@@ -46,29 +45,19 @@ class UDPClientGUI(QMainWindow):
         self.paused = False
         self.streaming = False
 
-        self.server_address = (self.server_ip, self.msg_port)
-        self.msg_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.data_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-
-        # Bind sockets to ports
-        self.msg_socket.bind(("", self.msg_port))
-        self.data_socket.bind(("", self.data_port))
-
-        # Create two threads to listen for messages and data
-        self.msg_thread = MessageListener(self.msg_socket)
-        self.data_thread = DataListener(
-            self.data_socket,
-            config["sample_rate"],
-            config["time_range"],
-            config["BUF_LEN"]
+        self.udp_client = UDPMsgDataClient(
+            self.server_ip,
+            self.msg_port,
+            self.data_port,
+            config["BUF_LEN"],
+            int(128*self.fs*self.time_range),
         )
-        self.msg_thread.received_msg.connect(self.update_console)
-        self.data_thread.received_data.connect(self.update_data)
-        # self.data_thread.received_data.connect(self.print_data)
-        self.msg_thread.start()
-        self.data_thread.start()
 
         self.initUI()
+
+        self.udp_client.msg_listener.received_msg.connect(self.update_console)
+        self.udp_client.data_listener.received_data.connect(self.update_data)
+        self.udp_client.start_listening()
         self.console.append(
             f"Listening for messages on port {self.msg_port}...")
         self.console.append(
@@ -77,54 +66,8 @@ class UDPClientGUI(QMainWindow):
     def initUI(self):
         self.setWindowTitle(window_title)
 
-        self.Ids_controls = {}
-        self.Vg_controls = {}
-
-        for i in range(self.n_channels):
-            self.Ids_controls[i] = {}
-            self.Vg_controls[i] = {}
-
-            self.Ids_controls[i]["spin_box"] = QDoubleSpinBox(self)
-            self.Ids_controls[i]["spin_box"].setRange(0, 4)
-            self.Ids_controls[i]["spin_box"].setSingleStep(0.1)
-            self.Ids_controls[i]["spin_box"].setDecimals(2)
-            self.Ids_controls[i]["spin_box"].setValue(0)
-            self.Ids_controls[i]["spin_box"].setPrefix("-")
-            if self.zero:
-                self.Ids_controls[i]["spin_box"].setSuffix(" V")
-            else:
-                self.Ids_controls[i]["spin_box"].setSuffix(" \u03BCA")
-            self.Ids_controls[i]["set_button"] = QPushButton("Set", self)
-            self.Ids_controls[i]["reset_button"] = QPushButton("Reset", self)
-
-            self.Vg_controls[i]["spin_box"] = QDoubleSpinBox(self)
-            self.Vg_controls[i]["spin_box"].setRange(0, 4)
-            self.Vg_controls[i]["spin_box"].setSingleStep(0.1)
-            self.Vg_controls[i]["spin_box"].setDecimals(2)
-            self.Vg_controls[i]["spin_box"].setValue(0)
-            self.Vg_controls[i]["spin_box"].setPrefix("-")
-            self.Vg_controls[i]["spin_box"].setSuffix(" V")
-            self.Vg_controls[i]["set_button"] = QPushButton("Set", self)
-            self.Vg_controls[i]["reset_button"] = QPushButton("Reset", self)
-
-            if self.zero:
-                self.Ids_controls[i]["set_button"].clicked.connect(
-                    lambda _, channel=i: self.set_Vs(
-                        channel, self.Ids_controls[channel]["spin_box"].value()))
-                self.Ids_controls[i]["reset_button"].clicked.connect(
-                    lambda _, channel=i: self.reset_Vs(channel))
-            else:
-                self.Ids_controls[i]["set_button"].clicked.connect(
-                    lambda _, channel=i: self.set_Ids(
-                        channel, self.Ids_controls[channel]["spin_box"].value()))
-                self.Ids_controls[i]["reset_button"].clicked.connect(
-                    lambda _, channel=i: self.reset_Ids(channel))
-
-            self.Vg_controls[i]["set_button"].clicked.connect(
-                lambda _, channel=i: self.set_Vg(
-                    channel, self.Vg_controls[channel]["spin_box"].value()))
-            self.Vg_controls[i]["reset_button"].clicked.connect(
-                lambda _, channel=i: self.reset_Vg(channel))
+        self.ocmfet_controller = ControllerWidget(
+            self.n_channels, self.udp_client, self.zero, self)
 
         self.stream_button = QPushButton("Stream", self)
         self.stream_button.clicked.connect(self.stream_cb)
@@ -225,27 +168,7 @@ class UDPClientGUI(QMainWindow):
         self.timer_layout.addWidget(self.max_record_time_label)
         self.timer_layout.addWidget(self.max_record_time_spin_box)
 
-        self.group_boxes = {}
-        for i in range(self.n_channels):
-            self.group_boxes[i] = QGroupBox(f"Channel {i+1} settings")
-
-            layout = QGridLayout()
-
-            if self.zero:
-                layout.addWidget(QLabel("V" + sub("S")), 0, 0)
-            else:
-                layout.addWidget(QLabel("I" + sub("DS")), 0, 0)
-            layout.addWidget(self.Ids_controls[i]["spin_box"], 1, 0)
-            layout.addWidget(self.Ids_controls[i]["set_button"], 2, 0)
-            layout.addWidget(self.Ids_controls[i]["reset_button"], 3, 0)
-
-            layout.addWidget(QLabel("V" + sub("G")), 0, 1)
-            layout.addWidget(self.Vg_controls[i]["spin_box"], 1, 1)
-            layout.addWidget(self.Vg_controls[i]["set_button"], 2, 1)
-            layout.addWidget(self.Vg_controls[i]["reset_button"], 3, 1)
-
-            self.group_boxes[i].setLayout(layout)
-            self.left_layout.addWidget(self.group_boxes[i])
+        self.left_layout.addWidget(self.ocmfet_controller)
 
         self.tag_layout = QHBoxLayout()
         self.tag_layout.addWidget(self.tag_line_edit)
@@ -308,28 +231,7 @@ class UDPClientGUI(QMainWindow):
                 self.record_cb()
 
     def send_command(self, command):
-        self.msg_socket.sendto(command.encode(), self.server_address)
-
-    def set_Ids(self, channel, value):
-        self.send_command(f"id{channel+1} {value}")
-
-    def reset_Ids(self, channel):
-        self.Ids_controls[channel]["spin_box"].setValue(0)
-        self.send_command(f"id{channel+1} 0")
-
-    def set_Vg(self, channel, value):
-        self.send_command(f"vg{channel+1} {value}")
-
-    def reset_Vg(self, channel):
-        self.Vg_controls[channel]["spin_box"].setValue(0)
-        self.send_command(f"vg{channel+1} 0")
-
-    def set_Vs(self, channel, value):
-        self.send_command(f"vs{channel+1} {value}")
-
-    def reset_Vs(self, channel):
-        self.Vg_controls[channel]["spin_box"].setValue(0)
-        self.send_command(f"vs{channel+1} 0")
+        self.udp_client.send_message(command)
 
     def send_user_command(self):
         command = self.line_edit.toPlainText()
@@ -367,13 +269,13 @@ class UDPClientGUI(QMainWindow):
 
     def stream_cb(self):
         if not self.streaming:  # Start streaming
-            self.data_thread.listening = True
+            self.udp_client.data_listener.listening = True
             self.send_command("start")
             self.streaming = True
             self.stream_button.setText("Stop")
             self.pause_streaming_button.setEnabled(True)
         else:  # Stop streaming
-            self.data_thread.listening = False
+            self.udp_client.data_listener.listening = False
             self.send_command("stop")
             self.streaming = False
             self.stream_button.setText("Stream")
@@ -394,7 +296,7 @@ class UDPClientGUI(QMainWindow):
         self.send_command(f"tag {tag}")
 
     def update_console(self, msg):
-        log = f"-> {msg}"
+        log = f"[{self.server_ip}]: {msg}"
         self.console.append(log)
 
     def print_data(self, data):
@@ -417,7 +319,9 @@ class UDPClientGUI(QMainWindow):
 
     def update_time_range(self, index):
         self.time_range = self.time_ranges[index]
-        self.data_thread.update_bytes_to_emit(self.fs, self.time_range)
+        self.udp_client.data_listener.update_bytes_to_emit(
+            128*int(self.fs*self.time_range)
+        )
         self.multi_graph.init_data(self.fs, self.time_range)
 
     def update_sample_rate(self, index):
@@ -429,8 +333,5 @@ class UDPClientGUI(QMainWindow):
 
     def closeEvent(self, event):
         # self.send_command("stop")
-        self.msg_thread.terminate()
-        self.data_thread.terminate()
-        self.msg_socket.close()
-        self.data_socket.close()
+        self.udp_client.close()
         event.accept()

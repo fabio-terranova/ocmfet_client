@@ -154,7 +154,8 @@ class MultiGraph(pg.GraphicsLayoutWidget):
 
         # Write RMS value
         rms = np.sqrt(np.mean(np.square(data)))
-        self.plot_items[i].setTitle(f"RMS: {eng_formatter.format_data(rms)}")
+        self.plot_items[i].setTitle(
+            f"({i+1}) RMS: {eng_formatter.format_data(rms)}")
 
         # Update pointer
         self.ptr += len(data)
