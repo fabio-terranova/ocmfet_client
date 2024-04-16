@@ -1,11 +1,16 @@
 from collections import deque
 
 import numpy as np
+import pyqtgraph as pg
+from matplotlib.ticker import EngFormatter
+from pyqtgraph.graphicsItems.DateAxisItem import DateAxisItem
 from pyqtgraph.graphicsItems.GraphicsLayout import GraphicsLayout
 from pyqtgraph.Qt import mkQApp
 from pyqtgraph.widgets.RemoteGraphicsView import RemoteGraphicsView
 
-import pyqtgraph as pg
+from utils.data_processing import datetime_range
+
+eng_formatter = EngFormatter(unit='A')
 
 
 class RemoteGraphicsLayoutWidget(RemoteGraphicsView):
@@ -34,11 +39,11 @@ class RemoteGraphicsLayoutWidget(RemoteGraphicsView):
             self.show()
 
 
-class MultiRemoteGraph(pg.GraphicsLayoutWidget):
+class MultiGraph(pg.GraphicsLayoutWidget):
     """
-    Multigraph class
+    MultiGraph class
 
-    This class uses the RemoteGraphicsLayoutWidget class to create a multi-graph.
+    This class uses the GraphicsLayoutWidget class to create a multi-graph widget.
     The plots are arranged in a vertical layout.
 
     Parameters
@@ -53,11 +58,11 @@ class MultiRemoteGraph(pg.GraphicsLayoutWidget):
         Time range in s
 
     x_label : tuple
-        It should be a tuple with two strings: the axis label and the units, 
-        e.g. ("Time", "s")
+        It could be a tuple with two strings: the axis label, and the units, 
+        e.g. ("Time", "s"), or a single string with the axis label.
 
     y_label : tuple
-        It should be a tuple with two strings: the axis label, and the units, 
+        It should be a tuple with two strings: the axis label, and the units,
         e.g. ("Current", "A")
 
     parent : QWidget
@@ -73,8 +78,8 @@ class MultiRemoteGraph(pg.GraphicsLayoutWidget):
         self.n = n
         self.fs = fs
         self.ms = tr
-        self.x_label = ("bottom",) + x_label
-        self.y_label = ("left",) + y_label
+        self.x_label = x_label
+        self.y_label = y_label
         self.initUI()
 
         self.init_data(self.fs, self.ms)
@@ -85,11 +90,12 @@ class MultiRemoteGraph(pg.GraphicsLayoutWidget):
             self.plot_items.append(self.addPlot(row=i, col=0))
             self.plot_items[i].setDownsampling(True, mode="peak")
             self.plot_items[i].setMenuEnabled(False)
+            self.plot_items[i].showGrid(x=True, y=True)
 
-            self.plot_items[i].setLabel(*self.x_label)
-            ch_y_label = (
-                self.y_label[0], f"({i+1}) " + self.y_label[1], self.y_label[2])
-            self.plot_items[i].setLabel(*ch_y_label)
+            self.plot_items[i].setLabels(
+                bottom=self.x_label,
+                left=self.y_label
+            )
 
             # Link x-axis of all plots
             if i > 0:
@@ -101,8 +107,14 @@ class MultiRemoteGraph(pg.GraphicsLayoutWidget):
         for curve in self.curves:
             curve.setPen((255, 0, 0))
 
+    def init_x_values(self):
+        self.x_values = np.linspace(0, self.tr, self.max_samples)
+
     def init_data(self, fs, tr):
+        self.fs = fs
+        self.tr = tr
         self.max_samples = int(fs*tr*1e3)
+        self.init_x_values()
 
         if hasattr(self, "data_queues"):
             for i in range(self.n):
@@ -114,22 +126,59 @@ class MultiRemoteGraph(pg.GraphicsLayoutWidget):
                                 for _ in range(self.n)]
             self.ptr = 0
 
-        for i in range(self.n):
-            self.plot_items[i].setXRange(0, self.max_samples)
+        self.plot_items[-1].setLabels(bottom=self.x_label)
 
-    def update_scroll(self, n, data):
+    def update_scrolls(self, data):
+        """
+        Updates the data in the scrolls.
+
+        Parameters
+        ----------
+        data : ndarray
+            Data to be plotted in the scrolls. The data should be a 1D array with
+            the data for each channel interleaved. For example, if there are 2 channels
+            and 10 samples, the data should be [ch1_sample1, ch2_sample1, ch1_sample2, ...]
+        """
+        for i in range(self.n):
+            self.update_scroll(i, data[i::self.n])
+
+    def update_scroll(self, i, data):
         if self.ptr > self.max_samples:
-            self.data_queues[n].popleft()
-        self.data_queues[n].extend(data)
-        self.curves[n].setData(self.data_queues[n])
+            self.data_queues[i].popleft()
+        self.data_queues[i].extend(data)
+
+        self.curves[i].setData(
+            x=self.x_values[:len(self.data_queues[i])],
+            y=self.data_queues[i]
+        )
+
         # Write RMS value
         rms = np.sqrt(np.mean(np.square(data)))
-        self.plot_items[n].setTitle(f"RMS: {rms:.2e} A")
+        self.plot_items[i].setTitle(f"RMS: {eng_formatter.format_data(rms)}")
 
+        # Update pointer
         self.ptr += len(data)
 
     def clear_scrolls(self):
         self.ptr = 0
         for i in range(self.n):
             self.data_queues[i].clear()
-            self.curves[i].setData(self.data_queues[i])
+
+
+class MultiGraph_dt(MultiGraph):
+    """ Wrapper for MultiRemoteGraph class with datetime x-axis."""
+
+    def __init__(self, n, fs, tr, x_label, y_label, parent=None):
+        super().__init__(n, fs, tr, x_label, y_label, parent)
+
+    def init_x_values(self):
+        self.x_values = datetime_range(self.max_samples, self.tr)
+
+        for plot_item in self.plot_items:
+            axis = DateAxisItem()
+            plot_item.setAxisItems({'bottom': axis})
+
+    def update_scrolls(self, data):
+        self.x_values = datetime_range(self.max_samples, self.tr)
+
+        super().update_scrolls(data)

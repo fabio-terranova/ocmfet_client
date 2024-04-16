@@ -1,5 +1,4 @@
 import socket
-import time
 
 import pyqtgraph as pg
 from PyQt5.QtCore import QTimer
@@ -8,9 +7,10 @@ from PyQt5.QtWidgets import (QCheckBox, QComboBox, QDoubleSpinBox, QGridLayout,
                              QMainWindow, QPushButton, QSpinBox, QTextEdit,
                              QVBoxLayout, QWidget)
 
-from gui.widgets import MultiRemoteGraph as MultiGraph
+from gui.widgets import MultiGraph
 from network.listeners import DataListener, MessageListener
-from utils.data_processing import bytes2samples, khertz2string, s2string, sub
+from utils.data_processing import (bytes2samples, khertz2string, s2hhmmss,
+                                   s2string, sub)
 
 # pg.setConfigOptions(useOpenGL=True)
 pg.setConfigOption('antialias', True)
@@ -18,12 +18,12 @@ pg.setConfigOption('background', 'w')
 pg.setConfigOption('foreground', 'k')
 
 version = "2.0"
-window_title = f"OCMFET client {version} - Fabio Terranosva"
+window_title = f"OCMFET client {version} - Fabio Terranova"
 
 
 class UDPClientGUI(QMainWindow):
     """
-    Main window of the OCMFET acquisition system client.
+    Main window of the client.
     """
 
     def __init__(self, config):
@@ -178,7 +178,7 @@ class UDPClientGUI(QMainWindow):
             self.n_channels,
             self.fs,
             self.time_range,
-            ("Time", "Samples"),
+            ("Time", "s"),
             y_label
         )
 
@@ -293,9 +293,7 @@ class UDPClientGUI(QMainWindow):
 
     def update_timer(self):
         self.elapsed_time += 1
-        self.recording_time_label.setText(time.strftime(
-            "[%H:%M:%S]", time.gmtime(self.elapsed_time))
-        )
+        self.recording_time_label.setText(f"[{s2hhmmss(self.elapsed_time)}]")
 
         if self.timer_checkbox.isChecked():
             if self.elapsed_time >= self.timer_spin_box.value():
@@ -404,10 +402,7 @@ class UDPClientGUI(QMainWindow):
 
     def update_data(self, data):
         points = bytes2samples(data, self.zero)
-
-        for i in range(self.n_channels):
-            # self.plot_widgets[i].update_scroll(points[i::self.n_channels])
-            self.multi_graph.update_scroll(i, points[i::self.n_channels])
+        self.multi_graph.update_scrolls(points)
 
     def clear_plot(self):
         self.multi_graph.clear_scrolls()

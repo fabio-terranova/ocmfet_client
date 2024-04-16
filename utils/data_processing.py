@@ -1,8 +1,10 @@
 import numpy as np
+import time
+import datetime
 
 
 def bytes2samples(data, zero=False):
-    """ Convert bytes to samples """
+    """ Convert bytes to samples."""
     if zero:
         # 2Bytes(MSB2|MSB1)|2Bytes(LSW1)|2Bytes(LSW2)|...
 
@@ -37,6 +39,22 @@ def bytes2samples(data, zero=False):
     return I
 
 
+def datetime_range(n_samples, dt):
+    """
+    Returns a range of timestamps from now to now + dt.
+
+    Parameters
+    ----------
+    n_samples : int
+        Number of samples in the range.
+    dt : float
+        Time delta in seconds.
+    """
+    dt1 = datetime.datetime.now()
+    dt2 = dt1 + datetime.timedelta(seconds=dt)
+    return np.linspace(dt1.timestamp(), dt2.timestamp(), n_samples)
+
+
 def htmlify(string):
     return f"<html>{string}</html>"
 
@@ -47,6 +65,11 @@ def mathify(string):
 
 def sub(string):
     return f"<sub>{string}</sub>"
+
+
+def s2hhmmss(seconds):
+    """ Returns time in hh:mm:ss from seconds """
+    time.strftime("[%H:%M:%S]", time.gmtime(seconds))
 
 
 def string2ms(string):

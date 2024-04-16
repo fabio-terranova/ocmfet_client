@@ -31,7 +31,7 @@ class DataListener(QThread):
 
     def update_bytes_to_emit(self, fs, tr):
         self.bytes_to_emit = int(128*fs*tr)
-        print(f"Bytes to emit: {self.bytes_to_emit}")
+        # print(f"Bytes to emit: {self.bytes_to_emit}")
         self.data_buffer = deque(maxlen=self.bytes_to_emit)
 
     def run(self):
