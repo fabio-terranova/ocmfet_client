@@ -3,40 +3,10 @@ from collections import deque
 import numpy as np
 import pyqtgraph as pg
 from matplotlib.ticker import EngFormatter
-from pyqtgraph.graphicsItems.DateAxisItem import DateAxisItem
-from pyqtgraph.graphicsItems.GraphicsLayout import GraphicsLayout
-from pyqtgraph.Qt import mkQApp
-from pyqtgraph.widgets.RemoteGraphicsView import RemoteGraphicsView
 
 from utils.data_processing import datetime_range
 
 eng_formatter = EngFormatter(unit='A')
-
-
-class RemoteGraphicsLayoutWidget(RemoteGraphicsView):
-    """
-    RemoteGraphicsLayoutWidget class
-
-    This class is a wrapper around the RemoteGraphicsView class. It is used
-    to create a remote graphics layout widget.
-    """
-
-    def __init__(self, parent=None, show=False, size=None, title=None, **kargs):
-        mkQApp()
-        RemoteGraphicsView.__init__(self, parent)
-        self.ci = GraphicsLayout(**kargs)
-        for n in ['nextRow', 'nextCol', 'nextColumn', 'addPlot', 'addViewBox', 'addItem', 'getItem', 'addLayout', 'addLabel', 'removeItem', 'itemIndex', 'clear']:
-            setattr(self, n, getattr(self.ci, n))
-        self.setCentralItem(self.ci)
-
-        if size is not None:
-            self.resize(*size)
-
-        if title is not None:
-            self.setWindowTitle(title)
-
-        if show is True:
-            self.show()
 
 
 class MultiGraph(pg.GraphicsLayoutWidget):
@@ -176,7 +146,7 @@ class MultiGraph_dt(MultiGraph):
         self.x_values = datetime_range(self.max_samples, self.tr)
 
         for plot_item in self.plot_items:
-            axis = DateAxisItem()
+            axis = pg.DateAxisItem(orientation='bottom')
             plot_item.setAxisItems({'bottom': axis})
 
     def update_scrolls(self, data):
