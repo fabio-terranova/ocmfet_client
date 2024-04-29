@@ -11,11 +11,19 @@ class MessageListener(QThread):
         super().__init__()
         self.socket = msg_socket
         self.msg_len = msg_len
+        self.listening = True
 
     def run(self):
         while True:
-            self.msg, _ = self.socket.recvfrom(self.msg_len)
-            self.received_msg.emit(self.msg.decode())
+            if self.listening:
+                self.msg, _ = self.socket.recvfrom(self.msg_len)
+                self.received_msg.emit(self.msg.decode())
+
+    def start_listening(self):
+        self.listening = True
+
+    def stop_listening(self):
+        self.listening = False
 
 
 class DataListener(QThread):
@@ -23,14 +31,13 @@ class DataListener(QThread):
 
     def __init__(self, data_socket, BUF_LEN, bytes_to_emit):
         super().__init__()
-        self.listening = True
         self.socket = data_socket
         self.BUF_LEN = BUF_LEN
-        self.update_bytes_to_emit(bytes_to_emit)
+        self.set_bytes_to_emit(bytes_to_emit)
+        self.listening = False
 
-    def update_bytes_to_emit(self, n_bytes):
+    def set_bytes_to_emit(self, n_bytes):
         self.bytes_to_emit = int(n_bytes)
-        # print(f"Bytes to emit: {self.bytes_to_emit}")
         self.data_buffer = deque(maxlen=self.bytes_to_emit)
 
     def run(self):
@@ -42,3 +49,9 @@ class DataListener(QThread):
                 if len(self.data_buffer) >= self.bytes_to_emit:
                     self.received_data.emit(np.array(self.data_buffer))
                     self.data_buffer.clear()
+
+    def start_listening(self):
+        self.listening = True
+
+    def stop_listening(self):
+        self.listening = False

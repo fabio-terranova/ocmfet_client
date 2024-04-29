@@ -1,23 +1,15 @@
 # Fabio Terranova - 2023
 # Client for the OCMFET acquisition system developed by Elbatech
-# TODO: add spectrum visualization for each channel
 
 import sys
 
-import pyqtgraph as pg
 from PyQt5.QtWidgets import QApplication
 
-from config import default, default_z
-from gui.main_window import UDPClientGUI
+from config import config_pyqtgraph, default, default_z
+from gui.MainWindow import MainWindow
 
-# pg.setConfigOptions(useOpenGL=True)
-pg.setConfigOption('antialias', True)
-pg.setConfigOption('background', 'w')
-pg.setConfigOption('foreground', 'k')
-
-version = "2.0"
-window_title = f"OCMFET client {version} - Fabio Terranova"
-
+# Configure pyqtgraph
+config_pyqtgraph()
 
 if __name__ == '__main__':
     # Run Qt GUI
@@ -33,7 +25,6 @@ if __name__ == '__main__':
         # Update default values
         default.update(default_z)
 
-    client = UDPClientGUI(default)
-
+    client = MainWindow(default)
     client.show()
     sys.exit(app.exec_())

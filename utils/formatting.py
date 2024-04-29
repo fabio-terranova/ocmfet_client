@@ -1,6 +1,7 @@
-import numpy as np
-import time
 import datetime
+import time
+
+import numpy as np
 
 
 def bytes2samples(data, zero=False):
@@ -34,9 +35,21 @@ def bytes2samples(data, zero=False):
         d = (np.left_shift(most_sig, 8) + least_sig)
         r = np.double(np.uint16(np.int16(d + 0x8000)))
         f = r * 10 / 65536.0 - 5
-        I = f * 0.2 / 1e6  # uA to A
+        I = f * 2 / 1e6  # uA to A
 
     return I
+
+
+def size2string(data):
+    """ Convert size in bytes to string."""
+    if data < 1e3:
+        return f"{data:.0f} B"
+    elif data < 1e6:
+        return f"{data/1e3:.0f} kB"
+    elif data < 1e9:
+        return f"{data/1e6:.0f} MB"
+    else:
+        return f"{data/1e9:.0f} GB"
 
 
 def datetime_range(n_samples, dt):
@@ -65,6 +78,10 @@ def mathify(string):
 
 def sub(string):
     return f"<sub>{string}</sub>"
+
+
+def sup(string):
+    return f"<sup>{string}</sup>"
 
 
 def s2hhmmss(seconds):

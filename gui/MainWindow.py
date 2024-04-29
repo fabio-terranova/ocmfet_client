@@ -1,46 +1,42 @@
-import numpy as np
-import pyqtgraph as pg
 from PyQt5.QtCore import QTimer
-from PyQt5.QtWidgets import (QCheckBox, QComboBox, QGroupBox, QHBoxLayout,
+from PyQt5.QtWidgets import (QCheckBox, QGridLayout, QGroupBox, QHBoxLayout,
                              QLabel, QLineEdit, QMainWindow, QPushButton,
-                             QSpinBox, QTextEdit, QVBoxLayout, QWidget)
+                             QSpinBox, QVBoxLayout, QWidget)
 
-from gui.multi_graph import MultiGraph
-from gui.ocmfet_controller import ControllerWidget
+from gui.ControllerWidget import ControllerDialog
+from gui.MsgWidget import MsgWidget
+from gui.PlotDialog import PlotDialog
 from network.udp_client import UDPMsgDataClient
-from utils.data_processing import (bytes2samples, khertz2string, s2hhmmss,
-                                   s2string, sub)
-
-# pg.setConfigOptions(useOpenGL=True)
-pg.setConfigOption('antialias', True)
-pg.setConfigOption('background', 'w')
-pg.setConfigOption('foreground', 'k')
-
-version = "2.0"
-window_title = f"OCMFET client {version} - Fabio Terranova"
+from utils.formatting import s2hhmmss
 
 
-class UDPClientGUI(QMainWindow):
+class MainWindow(QMainWindow):
     """
-    Main window of the client.
+    Main window of the UDP client.
     """
 
     def __init__(self, config):
         super().__init__()
 
+        # Load configuration
+        self.win_title = config["win_title"]
         self.zero = config["zero"]
         self.server_ip = config["server_ip"]
         self.msg_port = config["msg_port"]
         self.data_port = config["data_port"]
+        self.ch_layout = config["ch_layout"]
+        self.n_channels = len(self.ch_layout)
         self.T2 = config["T2"]
         self.time_ranges = config["time_ranges"]
         self.sample_rates = config["sample_rates"]
         self.fs = config["sample_rate"]
         self.time_range = config["time_range"]
-        self.n_channels = config["n_channels"]
         self.timer = config["timer"]
         self.max_record_time = config["max_record_time"]
+        self.bandpass = config["bandpass"]
+        self.notch = config["notch"]
 
+        # Status flags
         self.recording = False
         self.paused = False
         self.streaming = False
@@ -52,22 +48,39 @@ class UDPClientGUI(QMainWindow):
             config["BUF_LEN"],
             int(128*self.fs*self.time_range),
         )
+        self.udp_client.start_listening()
+
+        self.msg_widget = MsgWidget({
+            "start": "Start acquisition",
+            "stop": "Stop acquisition",
+        }, self.udp_client, self)
+
+        self.plot_dialog = PlotDialog(
+            config,
+            self.udp_client.data_listener,
+            self
+        )
+
+        self.ocmfet_dialog = ControllerDialog(
+            self.ch_layout,
+            self.udp_client,
+            self.zero,
+            self
+        )
 
         self.initUI()
-
-        self.udp_client.msg_listener.received_msg.connect(self.update_console)
-        self.udp_client.data_listener.received_data.connect(self.update_data)
-        self.udp_client.start_listening()
-        self.console.append(
-            f"Listening for messages on port {self.msg_port}...")
-        self.console.append(
-            f"Listening for data on port {self.data_port}...")
+        self.setGeometry(100, 100, self.sizeHint().width(),
+                         self.sizeHint().height())
+        self.plot_dialog.show()
 
     def initUI(self):
-        self.setWindowTitle(window_title)
+        self.setWindowTitle(self.win_title)
 
-        self.ocmfet_controller = ControllerWidget(
-            self.n_channels, self.udp_client, self.zero, self)
+        self.ocmfet_button = QPushButton("OCMFET controller", self)
+        self.ocmfet_button.clicked.connect(self.ocmfet_dialog.show)
+
+        self.plot_button = QPushButton("Live plot", self)
+        self.plot_button.clicked.connect(self.plot_dialog.show)
 
         self.stream_button = QPushButton("Stream", self)
         self.stream_button.clicked.connect(self.stream_cb)
@@ -108,96 +121,41 @@ class UDPClientGUI(QMainWindow):
         self.tag_button.setEnabled(False)
         self.tag_button.clicked.connect(self.tag_cb)
 
-        self.console = QTextEdit(self)
-        self.console.setReadOnly(True)
-
-        # MultiGraph
-        if self.zero:
-            y_label = (f"I{sub('ds')}", "A")
-        else:
-            y_label = (f"&Delta;I{sub('ds')}", "A")
-
-        self.multi_graph = MultiGraph(
-            self.n_channels,
-            self.fs,
-            self.time_range,
-            ("Time", "s"),
-            y_label
-        )
-
+        # Recording time
         self.recording_time_label = QLabel("[00:00:00]", self)
-        self.clear_plot_button = QPushButton("Clear plot", self)
-        self.clear_plot_button.clicked.connect(self.clear_plot)
-        self.pause_streaming_button = QPushButton("Pause", self)
-        self.pause_streaming_button.setEnabled(False)
-        self.pause_streaming_button.clicked.connect(self.pause_stream)
 
-        # Sample rate
-        self.sample_rate_label = QLabel("Sample rate", self)
-        self.sample_rate_combo = QComboBox(self)
-        self.sample_rate_combo.addItems(
-            [khertz2string(f) for f in self.sample_rates])
-        self.sample_rate_combo.setCurrentIndex(
-            self.sample_rates.index(self.fs)
-        )
-        self.sample_rate_combo.currentIndexChanged.connect(
-            self.update_sample_rate)
+        self.layout = QVBoxLayout()
 
-        # Time range
-        self.time_range_label = QLabel("Time range", self)
-        self.time_range_combo = QComboBox(self)
-        self.time_range_combo.addItems(
-            [s2string(t) for t in self.time_ranges])
-        self.time_range_combo.setCurrentIndex(
-            self.time_ranges.index(self.time_range)
-        )
-        self.time_range_combo.currentIndexChanged.connect(
-            self.update_time_range)
+        self.buttons_layout = QHBoxLayout()
+        self.buttons_layout.addWidget(self.ocmfet_button)
+        self.buttons_layout.addWidget(self.plot_button)
+        self.layout.addLayout(self.buttons_layout)
 
-        self.layout = QHBoxLayout()
-        self.left_layout = QVBoxLayout()
-        self.rec_groupbox = QGroupBox("Recording")
-
-        self.button_layout = QHBoxLayout()
-        self.button_layout.addWidget(self.record_button)
-        self.button_layout.addWidget(self.stream_button)
-
-        self.timer_layout = QHBoxLayout()
-        self.timer_layout.addWidget(self.timer_checkbox)
-        self.timer_layout.addWidget(self.timer_spin_box)
-        self.timer_layout.addWidget(self.max_record_time_label)
-        self.timer_layout.addWidget(self.max_record_time_spin_box)
-
-        self.left_layout.addWidget(self.ocmfet_controller)
-
+        self.acq_groupbox = QGroupBox("Acquisition")
+        self.acq_layout = QVBoxLayout()
+        self.acq_layout.addWidget(self.stream_button)
+        self.name_layout = QHBoxLayout()
+        self.name_layout.addWidget(self.name_line_edit)
+        self.name_layout.addWidget(self.record_button)
         self.tag_layout = QHBoxLayout()
         self.tag_layout.addWidget(self.tag_line_edit)
         self.tag_layout.addWidget(self.tag_button)
-        self.rec_layout = QVBoxLayout()
-        self.rec_layout.addLayout(self.button_layout)
-        self.rec_layout.addWidget(self.name_line_edit)
-        self.rec_layout.addLayout(self.tag_layout)
-        self.rec_layout.addLayout(self.timer_layout)
-        self.rec_groupbox.setLayout(self.rec_layout)
-        self.left_layout.addWidget(self.rec_groupbox)
-        self.left_layout.addWidget(self.console)
-
-        self.right_layout = QVBoxLayout()
-        self.right_layout.addWidget(self.multi_graph)
+        self.rec_layout = QGridLayout()
+        self.rec_layout.addWidget(self.timer_checkbox, 0, 0)
+        self.rec_layout.addWidget(self.timer_spin_box, 0, 1)
+        self.rec_layout.addWidget(self.max_record_time_label, 1, 0)
+        self.rec_layout.addWidget(self.max_record_time_spin_box, 1, 1)
         self.time_layout = QHBoxLayout()
         self.time_layout.addStretch()
-        self.time_layout.addWidget(self.clear_plot_button)
-        self.time_layout.addWidget(self.pause_streaming_button)
-        self.time_layout.addWidget(self.sample_rate_label)
-        self.time_layout.addWidget(self.sample_rate_combo)
-        self.time_layout.addWidget(self.time_range_label)
-        self.time_layout.addWidget(self.time_range_combo)
         self.time_layout.addWidget(self.recording_time_label)
-        self.right_layout.addLayout(self.time_layout)
+        self.acq_layout.addLayout(self.name_layout)
+        self.acq_layout.addLayout(self.tag_layout)
+        self.acq_layout.addLayout(self.rec_layout)
+        self.acq_layout.addLayout(self.time_layout)
+        self.acq_groupbox.setLayout(self.acq_layout)
+        self.layout.addWidget(self.acq_groupbox)
 
-        self.layout.addLayout(self.left_layout)
-        self.layout.addLayout(self.right_layout)
-        self.layout.setStretch(1, 4)
+        self.layout.addWidget(self.msg_widget)
 
         self.central_widget = QWidget()
         self.central_widget.setLayout(self.layout)
@@ -248,7 +206,7 @@ class UDPClientGUI(QMainWindow):
             self.record_button.setText("Pause")
             self.tag_button.setEnabled(True)
             if not self.streaming:  # Start streaming
-                self.data_thread.listening = True
+                self.udp_client.data_listener.start_listening()
                 self.streaming = True
                 self.pause_streaming_button.setEnabled(True)
             self.stream_button.setText("Save")
@@ -269,13 +227,13 @@ class UDPClientGUI(QMainWindow):
 
     def stream_cb(self):
         if not self.streaming:  # Start streaming
-            self.udp_client.data_listener.listening = True
+            self.udp_client.data_listener.start_listening()
             self.send_command("start")
             self.streaming = True
             self.stream_button.setText("Stop")
-            self.pause_streaming_button.setEnabled(True)
+            self.plot_dialog.pause_button.setEnabled(True)
         else:  # Stop streaming
-            self.udp_client.data_listener.listening = False
+            self.udp_client.data_listener.stop_listening()
             self.send_command("stop")
             self.streaming = False
             self.stream_button.setText("Stream")
@@ -286,7 +244,7 @@ class UDPClientGUI(QMainWindow):
                 self.record_button.setText("Record")
                 self.name_line_edit.setEnabled(True)
             self.tag_button.setEnabled(False)
-            self.pause_streaming_button.setEnabled(False)
+            self.plot_dialog.pause_button.setEnabled(False)
 
     def tag_cb(self):
         tag = self.tag_line_edit.text()
@@ -299,39 +257,12 @@ class UDPClientGUI(QMainWindow):
         log = f"[{self.server_ip}]: {msg}"
         self.console.append(log)
 
-    def print_data(self, data):
-        self.console.append(str(data))
-
-    def update_data(self, data):
-        points = bytes2samples(data, self.zero)
-        self.multi_graph.update_scrolls(points)
-
-    def clear_plot(self):
-        self.multi_graph.clear_scrolls()
-
-    def pause_stream(self):
-        if self.data_thread.listening:
-            self.data_thread.listening = False
-            self.pause_streaming_button.setText("Resume")
-        else:
-            self.data_thread.listening = True
-            self.pause_streaming_button.setText("Pause")
-
-    def update_time_range(self, index):
-        self.time_range = self.time_ranges[index]
-        self.udp_client.data_listener.update_bytes_to_emit(
-            128*int(self.fs*self.time_range)
-        )
-        self.multi_graph.init_data(self.fs, self.time_range)
-
-    def update_sample_rate(self, index):
-        self.fs = self.sample_rates[index]
-        self.T2 = float(1e6/self.fs)
-        self.multi_graph.init_data(self.fs, self.time_range)
-
-        self.send_command(f"sT2 {self.T2}")
-
     def closeEvent(self, event):
         # self.send_command("stop")
         self.udp_client.close()
+        event.accept()
+
+    def moveEvent(self, event):
+        if self.plot_dialog.isVisible() and self.plot_dialog.glued_checkbox.isChecked():
+            self.plot_dialog.move(self.x() + self.width(), self.y())
         event.accept()
