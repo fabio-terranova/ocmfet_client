@@ -52,9 +52,9 @@ if __name__ == '__main__':
             config_file = sys.argv[idx + 1]
             splash.config = yaml.safe_load(open(config_file, "r"))
 
-        if "-acq" in sys.argv:
+        if "-l" in sys.argv:
             splash.open_acq()
-        elif "-off" in sys.argv:
+        elif "-o" in sys.argv:
             splash.open_plot()
         main = splash.selected
     else:

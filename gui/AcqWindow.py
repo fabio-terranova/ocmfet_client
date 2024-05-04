@@ -83,7 +83,7 @@ class AcqWindow(QMainWindow):
 
         self.record_button = QToolButton(self)
         self.record_button.setIcon(
-            self.style().standardIcon(QStyle.SP_DialogNoButton))
+            self.style().standardIcon(QStyle.SP_MediaPlay))
         self.record_button.clicked.connect(self.record_cb)
 
         self.playpause_button = QToolButton(self)
