@@ -40,7 +40,7 @@ class ConfigDialog(QDialog):
         self.def_text.setLineWrapMode(QTextEdit.NoWrap)
         self.def_text.setVerticalScrollBarPolicy(1)
         self.def_text.setHorizontalScrollBarPolicy(1)
-        self.def_text.setMinimumSize(self.def_text.document().size().toSize())
+        self.def_text.setMinimumWidth(int(self.def_text.document().size().width()))
         self.config_text = QTextEdit()
         self.config_text.setFont(QFont("Courier New", 10))
         self.config_text.setPlainText(
