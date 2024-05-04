@@ -50,7 +50,7 @@ class DataProcessingWidget(QWidget):
         self.order_spin = QSpinBox()
         self.order_spin.setRange(1, 10)
         self.order_spin.setValue(self.bandpass[1])
-        self.order_spin.valueChanged.connect(self.update_filters)
+        self.order_spin.valueChanged.connect(self.update_filters)            
 
         self.layout = QHBoxLayout()
 
@@ -77,13 +77,11 @@ class DataProcessingWidget(QWidget):
         if self.high_spin.value() <= self.low_spin.value():
             self.high_spin.setValue(self.low_spin.value() + 1)
 
-        self.bandpass[0] = (self.low_spin.value(), self.high_spin.value())
-        self.bandpass[1] = self.order_spin.value()
-        self.notch[0] = self.notch_spin.value()
-        self.notch[1] = self.q_spin.value()
+        self.bandpass = (
+            (self.low_spin.value(), self.high_spin.value()), self.order_spin.value())
+        self.notch = (self.notch_spin.value(), self.q_spin.value())
 
-        filters = self.get_filters()
-        self.data_processer.change_filters(filters)
+        self.data_processer.change_filters(self.get_filters())
 
     def get_filters(self):
         filters = []

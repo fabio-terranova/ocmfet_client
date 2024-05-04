@@ -42,9 +42,11 @@ class DataListener(QThread):
 
     def run(self):
         while True:
-            data, _ = self.socket.recvfrom(self.BUF_LEN)
             if self.listening:
+                data, _ = self.socket.recvfrom(self.BUF_LEN)
                 self.data_buffer.extend(data)
+                # print data in hex format
+                # print(" ".join("{:02x}".format(x) for x in data))
 
                 if len(self.data_buffer) >= self.bytes_to_emit:
                     self.received_data.emit(np.array(self.data_buffer))

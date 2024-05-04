@@ -1,11 +1,11 @@
 from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import (QComboBox, QHBoxLayout, QLineEdit, QPushButton,
-                             QTextEdit, QVBoxLayout, QWidget)
+                             QShortcut, QTextEdit, QVBoxLayout, QWidget)
 
 
-class MsgWidget(QWidget):
+class Messanger(QWidget):
     """
-    MsgWidget class
+    Messanger class
 
     The widget allows the user to send commands to the server and visualize the response.
 
@@ -24,6 +24,8 @@ class MsgWidget(QWidget):
         self.commands = commands
         self.udp_client = udp_client
         self.is_connected = False
+        self.history = []
+        self.history_index = 0
         self.init_ui()
 
     def init_ui(self):
@@ -35,17 +37,28 @@ class MsgWidget(QWidget):
 
         # Add lineEdit with send button
         self.command_line = QLineEdit(self)
-        self.cmd_combo = QComboBox(self)
-        self.cmd_combo.addItems(self.commands.values())
-        self.cmd_combo.activated.connect(lambda i: self.command_line.setText(
-            list(self.commands.keys())[i]))
+        self.command_line.setPlaceholderText("Enter command")
+        self.command_line.setFocus()
+        self.command_line.setClearButtonEnabled(True)
+        self.history_up = QShortcut("Up", self.command_line)
+        self.history_down = QShortcut("Down", self.command_line)
+        self.history_up.activated.connect(self.history_up_cmd)
+        self.history_down.activated.connect(self.history_down_cmd)
         self.send_button = QPushButton("Send", self)
         self.send_button.clicked.connect(self.send_command)
         self.send_button.setDefault(True)
         self.command_line.returnPressed.connect(self.send_command)
         self.command_layout = QHBoxLayout()
         self.command_layout.addWidget(self.command_line)
-        self.command_layout.addWidget(self.cmd_combo)
+
+        if self.commands:
+            self.cmd_combo = QComboBox(self)
+            self.cmd_combo.addItems(list(self.commands.values()))
+            self.cmd_combo.currentTextChanged.connect(
+                lambda text: self.command_line.setText(
+                    list(self.commands.keys())[list(self.commands.values()).index(text)]))
+            self.command_layout.addWidget(self.cmd_combo)
+
         self.command_layout.addWidget(self.send_button)
 
         self.layout = QVBoxLayout()
@@ -59,10 +72,34 @@ class MsgWidget(QWidget):
         self.console.append("Listening for data on port {}.".format(
             self.udp_client.data_port))
 
+    def history_up_cmd(self):
+        """ Move up the command history."""
+        if self.history:
+            if self.history_index < len(self.history):
+                self.history_index += 1
+                self.command_line.setText(self.history[-self.history_index])
+
+    def history_down_cmd(self):
+        """ Move down the command history."""
+        if self.history:
+            if self.history_index > 1:
+                self.history_index -= 1
+                self.command_line.setText(self.history[-self.history_index])
+            else:
+                self.history_index = 0
+                self.command_line.clear()
+
     def send_command(self):
         """ Send command to the server."""
         cmd = self.command_line.text()
         if bool(cmd):
+            if len(self.history) > 0:
+                if cmd != self.history[-1]:
+                    self.history.append(cmd)
+            else:
+                self.history.append(cmd)
+
+            self.history_index = 0
             self.udp_client.send_message(cmd)
             self.console.append(f"[client] {cmd}")
             self.command_line.clear()

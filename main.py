@@ -1,30 +1,66 @@
-# Fabio Terranova - 2023
-# Client for the OCMFET acquisition system developed by Elbatech
+"""
+Fabio Terranova - 2023
 
+Client for the OCMFET acquisition system developed by Elbatech
+
+TODO
+----
+- Add offline data plotting
+    - Local data
+    - Remote data (server)
+"""
 import sys
 
-from PyQt5.QtWidgets import QApplication
+import pyqtgraph as pg
+import yaml
+from PyQt5.QtWidgets import QApplication, QDialog
 
-from config import config_pyqtgraph, default, default_z
-from gui.MainWindow import MainWindow
+from gui.SplashDialog import SplashDialog
 
-# Configure pyqtgraph
-config_pyqtgraph()
+__version__ = "2.5"
+author = "Fabio Terranova"
+
+win_title = "OCMFET client - {}".format(author)
+
+
+def config_pyqtgraph():
+    """
+    PyQtGraph configuration
+    """
+    pg.setConfigOptions(**{
+        # 'useOpenGL': True,
+        # 'antialias': True,
+        'background': 'w',
+        'foreground': 'k',
+        'leftButtonPan': False,
+    })
+
 
 if __name__ == '__main__':
+    # Configure PyQtGraph
+    config_pyqtgraph()
+
     # Run Qt GUI
-    app = QApplication(sys.argv)
+    app = QApplication([])
+    splash = SplashDialog(version=__version__, title=win_title)
 
-    # Usage: client.py [-zero]
-    zero = False
+    # Usage main.py [-acq] [-off] [-c <config_file>]
+    main = None
     if len(sys.argv) > 1:
-        if sys.argv[1] == "-zero":
-            zero = True
+        if "-c" in sys.argv:
+            idx = sys.argv.index("-c")
+            config_file = sys.argv[idx + 1]
+            splash.config = yaml.safe_load(open(config_file, "r"))
 
-    if zero:
-        # Update default values
-        default.update(default_z)
+        if "-acq" in sys.argv:
+            splash.open_acq()
+        elif "-off" in sys.argv:
+            splash.open_plot()
+        main = splash.selected
+    else:
+        if splash.exec_() == QDialog.Accepted:
+            main = splash.selected
 
-    client = MainWindow(default)
-    client.show()
-    sys.exit(app.exec_())
+    if main:
+        main.show()
+        app.exec_()

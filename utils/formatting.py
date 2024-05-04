@@ -4,9 +4,9 @@ import time
 import numpy as np
 
 
-def bytes2samples(data, zero=False):
+def bytes2samples(data, ch_type=2):
     """ Convert bytes to samples."""
-    if zero:
+    if ch_type == 1:
         # 2Bytes(MSB2|MSB1)|2Bytes(LSW1)|2Bytes(LSW2)|...
 
         msb2 = np.array(data[0::6])
@@ -86,7 +86,7 @@ def sup(string):
 
 def s2hhmmss(seconds):
     """ Returns time in hh:mm:ss from seconds """
-    time.strftime("[%H:%M:%S]", time.gmtime(seconds))
+    return time.strftime("%H:%M:%S", time.gmtime(seconds))
 
 
 def string2ms(string):
@@ -139,3 +139,15 @@ def khertz2string(f):
 def string2T(fs):
     """ Returns period in us from string """
     return float(1/string2hertz(fs))*1e6
+
+
+if __name__ == "__main__":
+    # test bytes2samples
+    values = "ac ca 5c c5 a3 3a 53 35 ca ac c5 5c 3a a3 35 53 11 11 22 22 33 33 44 44 55 55 66 66 77 77 88 88"
+    # values is a string of hex values
+    data = np.array([int(x, 16) for x in values.split()])
+
+    I = bytes2samples(data)
+
+    for i in range(0, len(I)):
+        print(f"Channel {i+1}: {I[i]} A")

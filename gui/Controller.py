@@ -1,8 +1,5 @@
 """
-ControllerWidget module
 
-This module contains the ControllerWidget class, which is a widget for controlling the OCMFET by
-sending commands to the UDP server.
 """
 
 import math
@@ -16,10 +13,10 @@ from utils.formatting import sub
 
 class ControllerDialog(QDialog):
 
-    def __init__(self, ch_layout, udp_client, zero=False, parent=None):
+    def __init__(self, channels, udp_client, parent=None):
         super().__init__(parent)
         self.controller = ControllerWidget(
-            ch_layout, udp_client, zero, parent=self
+            channels, udp_client, parent=self
         )
         self.init_ui()
 
@@ -33,16 +30,14 @@ class ControllerDialog(QDialog):
 class ControllerWidget(QWidget):
     """
     Widget for controlling the OCMFET device
-
     """
 
-    def __init__(self, ch_layout, udp_client, zero=False, parent=None):
+    def __init__(self, channels, udp_client, parent=None):
         super().__init__(parent)
         self.parent = parent
-        self.ch_layout = ch_layout
-        self.n_channels = len(ch_layout)
+        self.channels = channels
+        self.n_channels = len(channels)
         self.udp_client = udp_client
-        self.zero = zero
         self.init_ui()
 
     def init_ui(self):
@@ -51,6 +46,7 @@ class ControllerWidget(QWidget):
         self.Vg_controls = {}
 
         for i in range(self.n_channels):
+            ch_type = self.channels[i]["type"]
             self.Ids_controls[i] = {}
             self.Vg_controls[i] = {}
 
@@ -59,12 +55,13 @@ class ControllerWidget(QWidget):
             self.Ids_controls[i]["spin_box"].setSingleStep(0.1)
             self.Ids_controls[i]["spin_box"].setDecimals(2)
             self.Ids_controls[i]["spin_box"].setValue(0)
-            self.Ids_controls[i]["spin_box"].setPrefix("-")
 
-            if self.zero:
+            if ch_type == 1:  # zero version
                 self.Ids_controls[i]["spin_box"].setSuffix(" V")
             else:
                 self.Ids_controls[i]["spin_box"].setSuffix(" \u03BCA")
+                self.Ids_controls[i]["spin_box"].setPrefix("-")
+
             self.Ids_controls[i]["set_button"] = QToolButton(self)
             self.Ids_controls[i]["set_button"].setText("Set")
             self.Ids_controls[i]["reset_button"] = QToolButton(self)
@@ -87,7 +84,7 @@ class ControllerWidget(QWidget):
             self.Vg_controls[i]["spin_box"].valueChanged.connect(
                 lambda _, channel=i: self.Vg_controls[channel]["spin_box"].setStyleSheet("color: black"))
 
-            if self.zero:
+            if ch_type == 1:
                 self.Ids_controls[i]["set_button"].clicked.connect(
                     lambda _, channel=i: self.set_Vs(
                         channel, self.Ids_controls[channel]["spin_box"].value()))
@@ -108,11 +105,12 @@ class ControllerWidget(QWidget):
 
         self.group_boxes = {}
         for i in range(self.n_channels):
-            self.group_boxes[i] = QGroupBox(f"Ch. {i+1}")
+            ch = self.channels[i]
+            self.group_boxes[i] = QGroupBox(ch["name"])
             self.layout.addWidget(
                 self.group_boxes[i],
-                self.ch_layout[i][0],
-                self.ch_layout[i][1],
+                ch["coords"][0],
+                ch["coords"][1]
             )
 
             layout = QGridLayout()
@@ -123,7 +121,7 @@ class ControllerWidget(QWidget):
             Vg_buttons.addWidget(self.Vg_controls[i]["set_button"])
             Vg_buttons.addWidget(self.Vg_controls[i]["reset_button"])
 
-            if self.zero:
+            if ch_type == 1:
                 layout.addWidget(QLabel("V" + sub("S")), 0, 0)
             else:
                 layout.addWidget(QLabel("I" + sub("DS")), 0, 0)
@@ -165,12 +163,12 @@ class ControllerWidget(QWidget):
         self.send_command(f"vg{channel+1:02} 0")
 
     def set_Vs(self, channel, value):
-        self.Vg_controls[channel]["spin_box"].setStyleSheet("color: green")
+        self.Ids_controls[channel]["spin_box"].setStyleSheet("color: green")
         self.send_command(f"vs{channel+1:02} {value:.2f}")
 
     def reset_Vs(self, channel):
-        if not math.isclose(self.Vg_controls[channel]["spin_box"].value(), 0, abs_tol=1e-3):
-            self.Vg_controls[channel]["spin_box"].setStyleSheet("color: red")
+        if not math.isclose(self.Ids_controls[channel]["spin_box"].value(), 0, abs_tol=1e-3):
+            self.Ids_controls[channel]["spin_box"].setStyleSheet("color: red")
         else:
-            self.Vg_controls[channel]["spin_box"].setStyleSheet("color: green")
+            self.Ids_controls[channel]["spin_box"].setStyleSheet("color: green")
         self.send_command(f"vs{channel+1:02} 0")
