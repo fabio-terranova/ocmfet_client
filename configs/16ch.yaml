@@ -1,0 +1,115 @@
+server_ip: 192.168.137.240
+msg_port: 8888
+data_port: 8889
+channels:
+- name: Ch. 1
+  coords: [1, 1]
+  type: 2
+  labels:
+    left: ['&Delta;I<sub>ds</sub>', A]
+    bottom: [Time, s]
+- name: Ch. 2
+  coords: [1, 2]
+  type: 2
+  labels:
+    left: ['&Delta;I<sub>ds</sub>', A]
+    bottom: [Time, s]
+- name: Ch. 3
+  coords: [1, 3]
+  type: 0
+  labels:
+    left: ['&Delta;I<sub>ds</sub>', A]
+    bottom: [Time, s]
+- name: Ch. 4
+  coords: [1, 4]
+  type: 0
+  labels:
+    left: ['&Delta;I<sub>ds</sub>', A]
+    bottom: [Time, s]
+- name: Ch. 5
+  coords: [2, 1]
+  type: 0
+  labels:
+    left: ['&Delta;I<sub>ds</sub>', A]
+    bottom: [Time, s]
+- name: Ch. 6
+  coords: [2, 2]
+  type: 0
+  labels:
+    left: ['&Delta;I<sub>ds</sub>', A]
+    bottom: [Time, s]
+- name: Ch. 7
+  coords: [2, 3]
+  type: 0
+  labels:
+    left: ['&Delta;I<sub>ds</sub>', A]
+    bottom: [Time, s]
+- name: Ch. 8
+  coords: [2, 4]
+  type: 0
+  labels:
+    left: ['&Delta;I<sub>ds</sub>', A]
+    bottom: [Time, s]
+- name: Ch. 9
+  coords: [3, 1]
+  type: 0
+  labels:
+    left: ['&Delta;I<sub>ds</sub>', A]
+    bottom: [Time, s]
+- name: Ch. 10
+  coords: [3, 2]
+  type: 0
+  labels:
+    left: ['&Delta;I<sub>ds</sub>', A]
+    bottom: [Time, s]
+- name: Ch. 11
+  coords: [3, 3]
+  type: 0
+  labels:
+    left: ['&Delta;I<sub>ds</sub>', A]
+    bottom: [Time, s]
+- name: Ch. 12
+  coords: [3, 4]
+  type: 0
+  labels:
+    left: ['&Delta;I<sub>ds</sub>', A]
+    bottom: [Time, s]
+- name: Ch. 13
+  coords: [4, 1]
+  type: 0
+  labels:
+    left: ['&Delta;I<sub>ds</sub>', A]
+    bottom: [Time, s]
+- name: Ch. 14
+  coords: [4, 2]
+  type: 0
+  labels:
+    left: ['&Delta;I<sub>ds</sub>', A]
+    bottom: [Time, s]
+- name: Ch. 15
+  coords: [4, 3]
+  type: 0
+  labels:
+    left: ['&Delta;I<sub>ds</sub>', A]
+    bottom: [Time, s]
+- name: Ch. 16
+  coords: [4, 4]
+  type: 0
+  labels:
+    left: ['&Delta;I<sub>ds</sub>', A]
+    bottom: [Time, s]
+BUF_LEN: 32
+sample_rates: [5, 10, 20, 30, 40, 50]
+sample_rate: 20
+time_ranges: [1, 10, 30, 60]
+time_range: 1
+timer: 600
+max_record_time: 300
+bandpass:
+- [10, 5000.0]
+- 2
+notch: [50, 20]
+commands: {start: Start acquisition, stop: Stop
+    acquisition, stream: Stream (on/off),
+  rec: Start recording, save: Save data, pause: Pause
+    recording}
