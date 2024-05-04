@@ -183,7 +183,7 @@ class PlotDialog(QDialog):
 
         self.setLayout(self.layout)
 
-    def update_data(self, data, ch_type):
+    def update_data(self, data):
         """
         Update the data of the plot dialog.
 
@@ -192,7 +192,7 @@ class PlotDialog(QDialog):
         data : bytes
             Data to be plotted.
         """
-        points = bytes2samples(np.array(data), ch_type)
+        points = bytes2samples(np.array(data))
 
         self.data_processer.update_data(points)
         if self.multi_graph.isVisible():
