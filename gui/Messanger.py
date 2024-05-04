@@ -34,6 +34,8 @@ class Messanger(QWidget):
         font.setFamily("Courier")
         self.console.setFont(font)
         self.console.setReadOnly(True)
+        self.console.setContextMenuPolicy(3)
+        self.console.customContextMenuRequested.connect(self.console_menu)
 
         # Add lineEdit with send button
         self.command_line = QLineEdit(self)
@@ -67,10 +69,14 @@ class Messanger(QWidget):
         self.setLayout(self.layout)
 
         self.connect()
-        self.console.append("Listening for messages on port {}.".format(
-            self.udp_client.msg_port))
-        self.console.append("Listening for data on port {}.".format(
-            self.udp_client.data_port))
+
+    def console_menu(self, pos):
+        """ Show context menu for the console."""
+        menu = self.console.createStandardContextMenu()
+        clear_action = menu.addAction("Clear")
+        action = menu.exec_(self.console.viewport().mapToGlobal(pos))
+        if action == clear_action:
+            self.console.clear()
 
     def history_up_cmd(self):
         """ Move up the command history."""
@@ -101,12 +107,12 @@ class Messanger(QWidget):
 
             self.history_index = 0
             self.udp_client.send_message(cmd)
-            self.console.append(f"[client] {cmd}")
+            self.console.append(f"<b>client></b> {cmd}")
             self.command_line.clear()
 
     def update_console(self, msg):
         """ Update the console with the received message."""
-        log = f"[server] {msg}"
+        log = f"<b style='color: #0000FF'>server></b> <i>{msg}</i>"
         self.console.append(log)
 
     def connect(self):

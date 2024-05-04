@@ -244,7 +244,7 @@ class AcqWindow(QMainWindow):
             self.save_recording()
 
             self.record_button.setIcon(
-                self.style().standardIcon(QStyle.SP_DialogNoButton))
+                self.style().standardIcon(QStyle.SP_MediaPlay))
             self.tag_button.setEnabled(False)
             self.playpause_button.setEnabled(False)
 
