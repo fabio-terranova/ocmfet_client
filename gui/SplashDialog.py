@@ -27,7 +27,7 @@ class SplashDialog(QDialog):
         self.version.setAlignment(Qt.AlignRight)
         self.label.setAlignment(Qt.AlignCenter)
         self.acq_btn = QPushButton(
-            "Live acquisition", clicked=self.open_acq)
+            "Live acquisition", clicked=self.open_live)
         self.analysis_btn = QPushButton(
             "Offline analysis", clicked=self.open_analysis)
         self.config_btn = QPushButton(
@@ -47,7 +47,7 @@ class SplashDialog(QDialog):
         if config_dialog.exec_() == QDialog.Accepted:
             self.config = config_dialog.config
 
-    def open_acq(self):
+    def open_live(self):
         self.selected = AcqWindow("Live acquisition", self.config)
         self.accept()
 

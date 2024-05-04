@@ -52,16 +52,15 @@ if __name__ == '__main__':
             splash.config = yaml.safe_load(open(config_file, "r"))
 
         if "-l" in sys.argv:
-            splash.open_acq()
+            splash.open_live()
         elif "-o" in sys.argv:
-            splash.open_plot()
+            splash.open_analysis()
         else:
-            if splash.exec_() == QDialog.Accepted:
-                main = splash.selected
+            splash.exec_()
     else:
-        if splash.exec_() == QDialog.Accepted:
-            main = splash.selected
+        splash.exec_()
 
+    main = splash.selected
     if main:
         main.show()
         app.exec_()
