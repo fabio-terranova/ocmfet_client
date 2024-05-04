@@ -46,7 +46,6 @@ class SplashDialog(QDialog):
         config_dialog = ConfigDialog(self.config)
         if config_dialog.exec_() == QDialog.Accepted:
             self.config = config_dialog.config
-            print(self.config)
 
     def open_acq(self):
         self.selected = AcqWindow("Live acquisition", self.config)
