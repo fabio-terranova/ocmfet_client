@@ -16,7 +16,7 @@ class MessageListener(QThread):
     def run(self):
         while True:
             if self.listening:
-                self.msg, _ = self.socket.recvfrom(self.msg_len)
+                self.msg = self.socket.recv(self.msg_len)
                 self.received_msg.emit(self.msg.decode())
 
     def start_listening(self):
@@ -43,7 +43,7 @@ class DataListener(QThread):
     def run(self):
         while True:
             if self.listening:
-                data, _ = self.socket.recvfrom(self.BUF_LEN)
+                data = self.socket.recv(self.BUF_LEN)
                 self.data_buffer.extend(data)
                 # print data in hex format
                 # print(" ".join("{:02x}".format(x) for x in data))
