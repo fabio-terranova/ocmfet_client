@@ -6,14 +6,26 @@ Client application for the OCMFET acquisition system developed by Elbatech. The 
 
 - [OCMFET client](#ocmfet-client)
   - [Index](#index)
-  - [Requirements](#requirements)
-    - [Linux](#linux)
-    - [Windows](#windows)
-  - [Usage](#usage)
+  - [Running the application](#running-the-application)
+    - [Installing Python 3.11 and required packages](#installing-python-311-and-required-packages)
+      - [Using `pipenv`](#using-pipenv)
+      - [Using `pip`](#using-pip)
+    - [Usage](#usage)
 
-## Requirements
+## Running the application
 
-The client application is written in Python 3 and it requires the following packages:
+### Installing Python 3.11 and required packages
+
+To install Python 3.11, on Ubuntu, execute the following commands in the terminal:
+
+```sh
+sudo apt update
+sudo apt install python3.11
+```
+
+On Windows, download the installer from the [official website](https://www.python.org/downloads/).
+
+The application requires the following python packages:
 
 - [PyQt5](https://pypi.org/project/PyQt5/)
 - [pyqtgraph](https://pypi.org/project/pyqtgraph/)
@@ -21,26 +33,50 @@ The client application is written in Python 3 and it requires the following pack
 - [scipy](https://pypi.org/project/scipy/)
 - [PyYAML](https://pypi.org/project/pyyaml/)
 
-All the required packages can be installed using `pip` by running the following command in the terminal:
+One can use `pipenv` or install the required packages manually via `pip`.
 
-### Linux
+#### Using `pipenv`
 
-```sh
-pip3 install -r requirements.txt
-```
-
-### Windows
+To install the required packages using `pipenv`, on Ubuntu, execute the following commands in the terminal:
 
 ```sh
-pip install -r requirements.txt
+sudo apt install pipenv
+pipenv install
 ```
 
-## Usage
-
-The client application can be run by executing the following command in the terminal:
+On Windows, execute the following commands in the terminal:
 
 ```sh
-py client.py [-c <config_file>] [-l|-o]
+pip install pipenv
+pipenv install
 ```
 
-The optional argument `-c` can be used to specify the configuration file to be used by the client. If the argument is not provided, the default configuration file `default.yaml` will be used. The optional argument `-l` can be used to start the acquisition window immediately after the client is started. The optional argument `-o` can be used to start the offline analysis window immediately after the client is started.
+Then the application can be run using the following command (`python3` can be replaced by `python` on Windows):
+
+```sh
+pipenv run python3 main.py
+```
+
+#### Using `pip`
+
+To install the required packages using `pip` execute the following commands in the terminal:
+
+```sh
+pip install requirements.txt
+```
+
+Then the application can be run using the following command:
+
+```sh
+python3 main.py
+```
+
+### Usage
+
+The main script can be used as follows:
+
+```sh
+python3 main.py [-c <config_file>] [-l|-o]
+```
+
+The optional argument `-c` can be used to specify the configuration file to be used by the client. If the argument is not provided, the default configuration file `default.yaml` will be used. The optional argument `-l` can be used to open the acquisition window. The optional argument `-o` can be used to open the data analysis window (to be implemented).
