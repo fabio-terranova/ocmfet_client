@@ -44,7 +44,6 @@ if __name__ == '__main__':
     app = QApplication([])
     splash = SplashDialog(version=__version__, title=win_title)
 
-    # Usage main.py [-acq] [-off] [-c <config_file>]
     main = None
     if len(sys.argv) > 1:
         if "-c" in sys.argv:
@@ -56,7 +55,9 @@ if __name__ == '__main__':
             splash.open_acq()
         elif "-o" in sys.argv:
             splash.open_plot()
-        main = splash.selected
+        else:
+            if splash.exec_() == QDialog.Accepted:
+                main = splash.selected
     else:
         if splash.exec_() == QDialog.Accepted:
             main = splash.selected
