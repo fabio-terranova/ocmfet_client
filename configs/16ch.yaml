@@ -111,5 +111,5 @@ bandpass:
 notch: [50, 20]
 commands: {start: Start acquisition, stop: Stop
     acquisition, stream: Stream (on/off),
-  rec: Start recording, save: Save data, pause: Pause
+  rec: Start recording, save name: Save data, pause: Pause
     recording}

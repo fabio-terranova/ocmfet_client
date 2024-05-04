@@ -55,5 +55,5 @@ commands:
   stop: "Stop acquisition"
   stream: "Stream (on/off)"
   rec: "Start recording"
-  save: "Save data"
+  save name: "Save data"
   pause: "Pause recording"
