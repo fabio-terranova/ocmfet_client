@@ -84,11 +84,13 @@ class AcqWindow(QMainWindow):
         self.record_button = QToolButton(self)
         self.record_button.setIcon(
             self.style().standardIcon(QStyle.SP_MediaPlay))
+        self.record_button.setToolTip("Start/save recording")
         self.record_button.clicked.connect(self.record_cb)
 
         self.playpause_button = QToolButton(self)
         self.playpause_button.setIcon(
             self.style().standardIcon(QStyle.SP_MediaPause))
+        self.playpause_button.setToolTip("Pause/resume recording")
         self.playpause_button.clicked.connect(self.pause_cb)
         self.playpause_button.setEnabled(False)
 
@@ -97,7 +99,7 @@ class AcqWindow(QMainWindow):
         self.max_record_time_spin_box.setSuffix(" s")
         self.max_record_time_spin_box.setRange(0, 3600)
         self.max_record_time_spin_box.setValue(self.max_record_time)
-        self.max_record_time_spin_box.setEnabled(True)
+        self.max_record_time_spin_box.setEnabled(True)            
 
         self.timer_spin_box = QSpinBox(self)
         self.timer_spin_box.setSuffix(" s")

@@ -126,6 +126,7 @@ class PlotDialog(QDialog):
 
         self.glued_checkbox = QCheckBox("Glued")
         self.glued_checkbox.setChecked(True)
+        self.glued_checkbox.setToolTip("Glue the plot dialog to the main window")
         self.timeseries_radio = QRadioButton("Time series")
         self.timeseries_radio.setChecked(True)
         self.timeseries_radio.clicked.connect(self.change_plot)
@@ -142,6 +143,7 @@ class PlotDialog(QDialog):
         self.stream_button = QToolButton(self)
         self.stream_button.setIcon(
             self.style().standardIcon(QStyle.SP_MediaPause))
+        self.stream_button.setToolTip("Pause/resume streaming")
         self.stream_button.setEnabled(self.data_listener.listening)
         self.stream_button.clicked.connect(self.pause_plots)
         self.time_range_label = QLabel("Time range")
@@ -153,6 +155,7 @@ class PlotDialog(QDialog):
         self.time_range_combo.activated.connect(
             self.update_time_range)
         self.channel_sel_button = QPushButton("Channels", self)
+        self.channel_sel_button.setToolTip("Select channels to plot")
         self.channel_sel_button.clicked.connect(
             self.channel_selection_dialog.exec_)
 
