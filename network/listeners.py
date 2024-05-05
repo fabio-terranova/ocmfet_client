@@ -4,8 +4,7 @@ import numpy as np
 from PyQt5.QtCore import QThread, pyqtSignal
 
 import oCPPmfet as oc
-from utils.formatting import bytes2samples
-
+from utils.processing import bytes2samples
 
 class MessageListener(QThread):
     received_msg = pyqtSignal(str)
