@@ -11,7 +11,7 @@ from network.udp import MsgDataClient
 from utils.formatting import s2hhmmss
 
 
-class AcqWindow(QMainWindow):
+class LiveWindow(QMainWindow):
     """
     Main window of the acquisition system.
     """
@@ -99,7 +99,7 @@ class AcqWindow(QMainWindow):
         self.max_record_time_spin_box.setSuffix(" s")
         self.max_record_time_spin_box.setRange(0, 3600)
         self.max_record_time_spin_box.setValue(self.max_record_time)
-        self.max_record_time_spin_box.setEnabled(True)            
+        self.max_record_time_spin_box.setEnabled(True)
 
         self.timer_spin_box = QSpinBox(self)
         self.timer_spin_box.setSuffix(" s")
@@ -135,7 +135,6 @@ class AcqWindow(QMainWindow):
         self.buttons_layout = QHBoxLayout()
         self.buttons_layout.addWidget(self.ocmfet_button)
         self.buttons_layout.addWidget(self.plot_button)
-        # self.buttons_layout.addWidget(self.data_button)
         self.layout.addLayout(self.buttons_layout)
 
         self.acq_groupbox = QGroupBox("Recording")

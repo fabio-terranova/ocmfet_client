@@ -126,7 +126,8 @@ class PlotDialog(QDialog):
 
         self.glued_checkbox = QCheckBox("Glued")
         self.glued_checkbox.setChecked(True)
-        self.glued_checkbox.setToolTip("Glue the plot dialog to the main window")
+        self.glued_checkbox.setToolTip(
+            "Glue the plot dialog to the main window")
         self.timeseries_radio = QRadioButton("Time series")
         self.timeseries_radio.setChecked(True)
         self.timeseries_radio.clicked.connect(self.change_plot)

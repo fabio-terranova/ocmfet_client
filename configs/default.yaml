@@ -21,7 +21,7 @@ time_ranges: [1, 10, 30, 60]
 time_range: 1
 timer: 600
 max_record_time: 300
-bandpass: [[10, 5.0e+3], 2]
+bandpass: [[10, 8.0e+3], 2]
 notch: [50, 20]
 commands:
   start: "Start acquisition"
@@ -30,3 +30,4 @@ commands:
   rec: "Start recording"
   save name: "Save data"
   pause: "Pause recording"
+  info: "Get info"

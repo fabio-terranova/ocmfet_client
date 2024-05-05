@@ -2,7 +2,8 @@ import yaml
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QDialog, QGridLayout, QLabel, QPushButton
 
-from gui.AcqWindow import AcqWindow
+from gui.LiveWindow import LiveWindow
+from gui.AnalysisWindow import AnalysisWindow
 from gui.ConfigDialog import ConfigDialog
 
 
@@ -48,8 +49,9 @@ class SplashDialog(QDialog):
             self.config = config_dialog.config
 
     def open_live(self):
-        self.selected = AcqWindow("Live acquisition", self.config)
+        self.selected = LiveWindow("Live acquisition", self.config)
         self.accept()
 
     def open_analysis(self):
-        pass
+        self.selected = AnalysisWindow("Data analysis", self.config)
+        self.accept()

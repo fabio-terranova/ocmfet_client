@@ -44,7 +44,7 @@ timer: 600
 max_record_time: 300
 
 # Bandpass in Hz, order
-bandpass: [[10, 5.0e+3], 2]
+bandpass: [[10, 8.0e+3], 2]
 
 # Notch in Hz, Q-factor
 notch: [50, 20]
@@ -57,3 +57,5 @@ commands:
   rec: "Start recording"
   save name: "Save data"
   pause: "Pause recording"
+  info: "Get info"
+  

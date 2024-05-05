@@ -76,7 +76,7 @@ python3 main.py
 The main script can be used as follows:
 
 ```sh
-python3 main.py [-c <config_file>] [-l|-o]
+python3 main.py [-c <config_file>] [-l | -o]
 ```
 
 The optional argument `-c` can be used to specify the configuration file to be used by the client. If the argument is not provided, the default configuration file `default.yaml` will be used. The optional argument `-l` can be used to open the acquisition window. The optional argument `-o` can be used to open the data analysis window (to be implemented).

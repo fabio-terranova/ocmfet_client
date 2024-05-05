@@ -3,6 +3,7 @@ from collections import deque
 import numpy as np
 from PyQt5.QtCore import QThread, pyqtSignal
 
+from utils.formatting import bytes2samples
 
 class MessageListener(QThread):
     received_msg = pyqtSignal(str)
@@ -57,3 +58,23 @@ class DataListener(QThread):
 
     def stop_listening(self):
         self.listening = False
+
+
+class DataReader(QThread):
+    data_read = pyqtSignal(np.ndarray)
+
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.data_buffer = deque()
+
+    def open_file(self, file):
+        with open(file, "rb") as f:
+            f_size = f.seek(0, 2)
+            chunk_size = f_size//32
+            f.seek(0, 0)
+            for i in range(0, f_size, chunk_size):
+                b = f.read(chunk_size)
+                self.data_buffer.extend(b)
+                points = bytes2samples(np.array(self.data_buffer))
+                self.data_read.emit(points)
+        self.data_buffer.clear()
