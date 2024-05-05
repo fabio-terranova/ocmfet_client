@@ -15,9 +15,9 @@ from PyQt5.QtWidgets import (
     QWidget,
 )
 
-from gui.Controller import ControllerDialog
-from gui.Messanger import Messanger
-from gui.PlotDialog import PlotDialog
+from gui.dialogs.PlotDialog import PlotDialog
+from gui.widgets.Controller import ControllerDialog
+from gui.widgets.Messanger import Messanger
 from network.udp import MsgDataClient
 from utils.formatting import s2hhmmss
 

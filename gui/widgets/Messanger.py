@@ -64,7 +64,7 @@ class Messanger(QWidget):
         if self.commands:
             self.cmd_combo = QComboBox(self)
             self.cmd_combo.addItems(list(self.commands.values()))
-            self.cmd_combo.currentTextChanged.connect(
+            self.cmd_combo.activated[str].connect(
                 lambda text: self.command_line.setText(
                     list(self.commands.keys())[list(self.commands.values()).index(text)]
                 )

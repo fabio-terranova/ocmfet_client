@@ -13,8 +13,8 @@ from PyQt5.QtWidgets import (
     QVBoxLayout,
 )
 
-from gui.DataProcessing import DataProcessingWidget
-from gui.MultiGraph import (
+from gui.widgets.DataProcessing import DataProcessingWidget
+from gui.widgets.MultiGraph import (
     MultiGraphPSDWidget,
     MultiGraphSpectrogramWidget,
     MultiGraphWidget,

@@ -10,7 +10,7 @@ import pyqtgraph as pg
 import yaml
 from PyQt5.QtWidgets import QApplication
 
-from gui.SplashDialog import SplashDialog
+from gui.dialogs.SplashDialog import SplashDialog
 
 __version__ = "2.5"
 author = "Fabio Terranova"

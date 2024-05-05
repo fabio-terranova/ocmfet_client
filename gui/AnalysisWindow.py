@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QFileDialog, QMainWindow, QPushButton, QVBoxLayout, QWidget
 
-from gui.MultiGraph import MultiGraphWidget
+from gui.widgets.MultiGraph import MultiGraphWidget
 from network.listeners import DataReader
 from utils.processing import DataProcessor
 
