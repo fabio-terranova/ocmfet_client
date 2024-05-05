@@ -11,7 +11,7 @@ import numpy as np
 from scipy.signal import filtfilt
 
 
-class DataProcessor():
+class DataProcessor:
     """
     DataProcessor
 
@@ -89,21 +89,22 @@ class DataProcessor():
 
     def __init__(self, n, fs, max_time, filters=[]):
         self.n = n
-        self.fs = fs*1e3
+        self.fs = fs * 1e3
         self.max_time = max_time
-        self.max_samples = int(self.fs*self.max_time)
+        self.max_samples = int(self.fs * self.max_time)
         self.filters = filters
 
         self.init_data()
 
     def init_data(self):
-        """"
+        """ "
         Initialize the data structure of the DataProcessor object.
         """
-        self.max_samples = int(self.fs*self.max_time)
-        if hasattr(self, 'data'):
-            self.data = [deque(self.data[i], maxlen=self.max_samples)
-                         for i in range(self.n)]
+        self.max_samples = int(self.fs * self.max_time)
+        if hasattr(self, "data"):
+            self.data = [
+                deque(self.data[i], maxlen=self.max_samples) for i in range(self.n)
+            ]
             self.ptr = len(self.data[0])
         else:
             self.data = [deque(maxlen=self.max_samples) for _ in range(self.n)]
@@ -118,7 +119,7 @@ class DataProcessor():
         fs : scalar
             Sample rate in kHz
         """
-        self.fs = fs*1e3
+        self.fs = fs * 1e3
         self.init_data()
 
     def change_max_time(self, max_time):
@@ -160,7 +161,7 @@ class DataProcessor():
         data : ndarray
             Filtered data.
         """
-        for (b, a) in self.filters:
+        for b, a in self.filters:
             data = filtfilt(b, a, data)
 
         return data
@@ -180,8 +181,8 @@ class DataProcessor():
         for i in range(self.n):
             if self.ptr > self.max_samples:
                 self.data[i].popleft()
-            self.data[i].extend(data[i::self.n])
-        self.ptr += len(data)//self.n  # Update pointer
+            self.data[i].extend(data[i :: self.n])
+        self.ptr += len(data) // self.n  # Update pointer
 
     def get_data(self):
         """

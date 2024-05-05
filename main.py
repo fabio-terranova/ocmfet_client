@@ -2,13 +2,8 @@
 Fabio Terranova - 2023
 
 Client for the OCMFET acquisition system developed by Elbatech
-
-TODO
-----
-- Add offline data plotting
-    - Local data
-    - Remote data (server)
 """
+
 import sys
 
 import pyqtgraph as pg
@@ -27,16 +22,18 @@ def config_pyqtgraph():
     """
     PyQtGraph configuration
     """
-    pg.setConfigOptions(**{
-        # 'useOpenGL': True,
-        # 'antialias': True,
-        'background': 'w',
-        'foreground': 'k',
-        'leftButtonPan': False,
-    })
+    pg.setConfigOptions(
+        **{
+            # 'useOpenGL': True,
+            # 'antialias': True,
+            "background": "w",
+            "foreground": "k",
+            "leftButtonPan": False,
+        }
+    )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Configure PyQtGraph
     config_pyqtgraph()
 

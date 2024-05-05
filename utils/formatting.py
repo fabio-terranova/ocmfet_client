@@ -34,11 +34,7 @@ def bytes2samples(data, ch_type=2):
         most_sig = data[0::2]
         least_sig = data[1::2]
 
-        print(hex(most_sig[0]), hex(least_sig[0]))
-        print(hex(np.left_shift(most_sig[0], 8) + least_sig[0]))
-
         d = np.left_shift(most_sig, 8) + least_sig
-        print(hex(d[0]))
         r = np.double(np.uint16(np.int16(d + 0x8000)))
         f = r * 10 / 65536.0 - 5
         current = f * 2 / 1e6  # uA to A

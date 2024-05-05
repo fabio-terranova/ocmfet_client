@@ -2,9 +2,9 @@ import yaml
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QDialog, QGridLayout, QLabel, QPushButton
 
-from gui.LiveWindow import LiveWindow
 from gui.AnalysisWindow import AnalysisWindow
 from gui.ConfigDialog import ConfigDialog
+from gui.LiveWindow import LiveWindow
 
 
 class SplashDialog(QDialog):

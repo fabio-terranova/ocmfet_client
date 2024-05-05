@@ -1,7 +1,15 @@
 import yaml
 from PyQt5.QtGui import QFont
-from PyQt5.QtWidgets import (QApplication, QDialog, QFileDialog, QGridLayout,
-                             QPushButton, QTabWidget, QTextEdit, QWidget)
+from PyQt5.QtWidgets import (
+    QApplication,
+    QDialog,
+    QFileDialog,
+    QGridLayout,
+    QPushButton,
+    QTabWidget,
+    QTextEdit,
+    QWidget,
+)
 
 
 class ConfigDialog(QDialog):
@@ -34,7 +42,8 @@ class ConfigDialog(QDialog):
         self.def_text = QTextEdit()
         self.def_text.setFont(QFont("Courier New", 10))
         self.def_text.setPlainText(
-            yaml.dump(self.config, default_flow_style=None, sort_keys=False, width=50))
+            yaml.dump(self.config, default_flow_style=None, sort_keys=False, width=50)
+        )
         self.def_text.setReadOnly(True)
         self.def_text.setEnabled(False)
         self.def_text.setLineWrapMode(QTextEdit.NoWrap)
@@ -44,7 +53,8 @@ class ConfigDialog(QDialog):
         self.config_text = QTextEdit()
         self.config_text.setFont(QFont("Courier New", 10))
         self.config_text.setPlainText(
-            yaml.dump(self.config, default_flow_style=None, sort_keys=False, width=50))
+            yaml.dump(self.config, default_flow_style=None, sort_keys=False, width=50)
+        )
         self.config_text.setLineWrapMode(QTextEdit.NoWrap)
 
         self.default_tab.setLayout(QGridLayout())
@@ -52,15 +62,17 @@ class ConfigDialog(QDialog):
 
         self.default_tab.layout().addWidget(self.def_text, 0, 0)
         self.default_tab.layout().addWidget(
-            QPushButton("Use", clicked=self.use_def), 1, 0)
+            QPushButton("Use", clicked=self.use_def), 1, 0
+        )
 
         self.custom_tab.layout().addWidget(self.config_text, 0, 0, 1, 3)
         self.custom_tab.layout().addWidget(
-            QPushButton("Load", clicked=self.load_config), 1, 0)
+            QPushButton("Load", clicked=self.load_config), 1, 0
+        )
         self.custom_tab.layout().addWidget(
-            QPushButton("Save", clicked=self.save_config), 1, 1)
-        self.custom_tab.layout().addWidget(
-            QPushButton("Use", clicked=self.use), 1, 2)
+            QPushButton("Save", clicked=self.save_config), 1, 1
+        )
+        self.custom_tab.layout().addWidget(QPushButton("Use", clicked=self.use), 1, 2)
 
         self.setLayout(QGridLayout())
         self.layout().addWidget(self.tabs, 0, 0)
@@ -75,24 +87,27 @@ class ConfigDialog(QDialog):
 
     def save_config(self):
         file, _ = QFileDialog.getSaveFileName(
-            self, "Save configuration", "configs", "YAML files (*.yaml)")
+            self, "Save configuration", "configs", "YAML files (*.yaml)"
+        )
         if file:
             with open(file, "w") as f:
                 f.write(self.config_text.toPlainText())
 
     def update_config(self):
         self.config_text.setPlainText(
-            yaml.dump(self.config, default_flow_style=None, sort_keys=False, width=50))
+            yaml.dump(self.config, default_flow_style=None, sort_keys=False, width=50)
+        )
 
     def load_config(self):
         file, _ = QFileDialog.getOpenFileName(
-            self, "Load configuration", "configs", "YAML files (*.yaml)")
+            self, "Load configuration", "configs", "YAML files (*.yaml)"
+        )
         if file:
             self.config = yaml.safe_load(open(file, "r"))
             self.update_config()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app = QApplication([])
     dialog = ConfigDialog({"key": "value"})
     if dialog.exec_() == QDialog.Accepted:
