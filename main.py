@@ -13,7 +13,7 @@ import sys
 
 import pyqtgraph as pg
 import yaml
-from PyQt5.QtWidgets import QApplication, QDialog
+from PyQt5.QtWidgets import QApplication
 
 from gui.SplashDialog import SplashDialog
 
