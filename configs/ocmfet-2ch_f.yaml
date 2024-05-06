@@ -31,4 +31,3 @@ commands:
   save name: "Save data"
   pause: "Pause recording"
   info: "Get info"
-  
