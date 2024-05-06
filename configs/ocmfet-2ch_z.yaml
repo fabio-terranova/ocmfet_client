@@ -1,13 +1,6 @@
-# Server IP
 server_ip: "192.168.137.240"
-
-# Message Port
 msg_port: 8888
-
-# Data Port
 data_port: 8889
-
-# Channels
 channels:
   - name: "Ch. 1"
     coords: [1, 1]
@@ -21,35 +14,15 @@ channels:
     labels:
       left: ["&Delta;I<sub>ds</sub>", "A"]
       bottom: ["Time", "s"]
-
-# Buffer Length in bytes
 BUF_LEN: 32
-
-# Sample Rates in kHz
 sample_rates: [5, 10, 20, 30, 40, 50]
-
-# Sample Rate in kHz
 sample_rate: 5
-
-# Time Ranges in seconds
 time_ranges: [1, 10, 30, 60]
-
-# Time Range in seconds
 time_range: 1
-
-# Timer in seconds
 timer: 600
-
-# Maximum Record Time in seconds
 max_record_time: 300
-
-# Bandpass in Hz, order
 bandpass: [[10, 2.0e+3], 2]
-
-# Notch in Hz, Q-factor
 notch: [50, 20]
-
-# Commands
 commands:
   start: "Start acquisition"
   stop: "Stop acquisition"
