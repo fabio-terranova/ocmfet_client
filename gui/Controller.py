@@ -1,26 +1,23 @@
-""" """
+"""
+
+"""
 
 import math
 
-from PyQt5.QtWidgets import (
-    QDialog,
-    QDoubleSpinBox,
-    QGridLayout,
-    QGroupBox,
-    QHBoxLayout,
-    QLabel,
-    QToolButton,
-    QVBoxLayout,
-    QWidget,
-)
+from PyQt5.QtWidgets import (QDialog, QDoubleSpinBox, QGridLayout, QGroupBox,
+                             QHBoxLayout, QLabel, QToolButton, QVBoxLayout,
+                             QWidget)
 
 from utils.formatting import sub
 
 
 class ControllerDialog(QDialog):
+
     def __init__(self, channels, udp_client, parent=None):
         super().__init__(parent)
-        self.controller = ControllerWidget(channels, udp_client, parent=self)
+        self.controller = ControllerWidget(
+            channels, udp_client, parent=self
+        )
         self.init_ui()
 
     def init_ui(self):
@@ -62,7 +59,7 @@ class ControllerWidget(QWidget):
             if ch_type == 1:  # zero version
                 self.Ids_controls[i]["spin_box"].setSuffix(" V")
             else:
-                self.Ids_controls[i]["spin_box"].setSuffix(" \u03bcA")
+                self.Ids_controls[i]["spin_box"].setSuffix(" \u03BCA")
                 self.Ids_controls[i]["spin_box"].setPrefix("-")
 
             self.Ids_controls[i]["set_button"] = QToolButton(self)
@@ -83,49 +80,38 @@ class ControllerWidget(QWidget):
             self.Vg_controls[i]["reset_button"].setText("Reset")
 
             self.Ids_controls[i]["spin_box"].valueChanged.connect(
-                lambda _, channel=i: self.Ids_controls[channel][
-                    "spin_box"
-                ].setStyleSheet("color: black")
-            )
+                lambda _, channel=i: self.Ids_controls[channel]["spin_box"].setStyleSheet("color: black"))
             self.Vg_controls[i]["spin_box"].valueChanged.connect(
-                lambda _, channel=i: self.Vg_controls[channel][
-                    "spin_box"
-                ].setStyleSheet("color: black")
-            )
+                lambda _, channel=i: self.Vg_controls[channel]["spin_box"].setStyleSheet("color: black"))
 
             if ch_type == 1:
                 self.Ids_controls[i]["set_button"].clicked.connect(
                     lambda _, channel=i: self.set_Vs(
-                        channel, self.Ids_controls[channel]["spin_box"].value()
-                    )
-                )
+                        channel, self.Ids_controls[channel]["spin_box"].value()))
                 self.Ids_controls[i]["reset_button"].clicked.connect(
-                    lambda _, channel=i: self.reset_Vs(channel)
-                )
+                    lambda _, channel=i: self.reset_Vs(channel))
             else:
                 self.Ids_controls[i]["set_button"].clicked.connect(
                     lambda _, channel=i: self.set_Ids(
-                        channel, self.Ids_controls[channel]["spin_box"].value()
-                    )
-                )
+                        channel, self.Ids_controls[channel]["spin_box"].value()))
                 self.Ids_controls[i]["reset_button"].clicked.connect(
-                    lambda _, channel=i: self.reset_Ids(channel)
-                )
+                    lambda _, channel=i: self.reset_Ids(channel))
 
             self.Vg_controls[i]["set_button"].clicked.connect(
                 lambda _, channel=i: self.set_Vg(
-                    channel, self.Vg_controls[channel]["spin_box"].value()
-                )
-            )
+                    channel, self.Vg_controls[channel]["spin_box"].value()))
             self.Vg_controls[i]["reset_button"].clicked.connect(
-                lambda _, channel=i: self.reset_Vg(channel)
-            )
+                lambda _, channel=i: self.reset_Vg(channel))
 
         self.group_boxes = {}
         for i in range(self.n_channels):
             ch = self.channels[i]
             self.group_boxes[i] = QGroupBox(ch["name"])
-            self.layout.addWidget(self.group_boxes[i], ch["coords"][0], ch["coords"][1])
+            self.layout.addWidget(
+                self.group_boxes[i],
+                ch["coords"][0],
+                ch["coords"][1]
+            )
 
             layout = QGridLayout()
             Ids_buttons = QHBoxLayout()
@@ -158,12 +144,11 @@ class ControllerWidget(QWidget):
         self.send_command(f"id{channel+1:02} {value:.2f}")
 
     def reset_Ids(self, channel):
-        if not math.isclose(
-            self.Ids_controls[channel]["spin_box"].value(), 0, abs_tol=1e-3
-        ):
+        if not math.isclose(self.Ids_controls[channel]["spin_box"].value(), 0, abs_tol=1e-3):
             self.Ids_controls[channel]["spin_box"].setStyleSheet("color: red")
         else:
-            self.Ids_controls[channel]["spin_box"].setStyleSheet("color: green")
+            self.Ids_controls[channel]["spin_box"].setStyleSheet(
+                "color: green")
         self.send_command(f"id{channel+1:02} 0")
 
     def set_Vg(self, channel, value):
@@ -171,9 +156,7 @@ class ControllerWidget(QWidget):
         self.send_command(f"vg{channel+1:02} {value:.2f}")
 
     def reset_Vg(self, channel):
-        if not math.isclose(
-            self.Vg_controls[channel]["spin_box"].value(), 0, abs_tol=1e-3
-        ):
+        if not math.isclose(self.Vg_controls[channel]["spin_box"].value(), 0, abs_tol=1e-3):
             self.Vg_controls[channel]["spin_box"].setStyleSheet("color: red")
         else:
             self.Vg_controls[channel]["spin_box"].setStyleSheet("color: green")
@@ -184,9 +167,7 @@ class ControllerWidget(QWidget):
         self.send_command(f"vs{channel+1:02} {value:.2f}")
 
     def reset_Vs(self, channel):
-        if not math.isclose(
-            self.Ids_controls[channel]["spin_box"].value(), 0, abs_tol=1e-3
-        ):
+        if not math.isclose(self.Ids_controls[channel]["spin_box"].value(), 0, abs_tol=1e-3):
             self.Ids_controls[channel]["spin_box"].setStyleSheet("color: red")
         else:
             self.Ids_controls[channel]["spin_box"].setStyleSheet("color: green")

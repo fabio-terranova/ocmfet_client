@@ -1,14 +1,6 @@
 from PyQt5.QtGui import QFont
-from PyQt5.QtWidgets import (
-    QComboBox,
-    QHBoxLayout,
-    QLineEdit,
-    QPushButton,
-    QShortcut,
-    QTextEdit,
-    QVBoxLayout,
-    QWidget,
-)
+from PyQt5.QtWidgets import (QComboBox, QHBoxLayout, QLineEdit, QPushButton,
+                             QShortcut, QTextEdit, QVBoxLayout, QWidget)
 
 
 class Messanger(QWidget):
@@ -64,11 +56,9 @@ class Messanger(QWidget):
         if self.commands:
             self.cmd_combo = QComboBox(self)
             self.cmd_combo.addItems(list(self.commands.values()))
-            self.cmd_combo.activated[str].connect(
+            self.cmd_combo.currentTextChanged.connect(
                 lambda text: self.command_line.setText(
-                    list(self.commands.keys())[list(self.commands.values()).index(text)]
-                )
-            )
+                    list(self.commands.keys())[list(self.commands.values()).index(text)]))
             self.command_layout.addWidget(self.cmd_combo)
 
         self.command_layout.addWidget(self.send_button)
@@ -81,7 +71,7 @@ class Messanger(QWidget):
         self.connect()
 
     def console_menu(self, pos):
-        """Show context menu for the console."""
+        """ Show context menu for the console."""
         menu = self.console.createStandardContextMenu()
         clear_action = menu.addAction("Clear")
         action = menu.exec_(self.console.viewport().mapToGlobal(pos))
@@ -89,14 +79,14 @@ class Messanger(QWidget):
             self.console.clear()
 
     def history_up_cmd(self):
-        """Move up the command history."""
+        """ Move up the command history."""
         if self.history:
             if self.history_index < len(self.history):
                 self.history_index += 1
                 self.command_line.setText(self.history[-self.history_index])
 
     def history_down_cmd(self):
-        """Move down the command history."""
+        """ Move down the command history."""
         if self.history:
             if self.history_index > 1:
                 self.history_index -= 1
@@ -106,7 +96,7 @@ class Messanger(QWidget):
                 self.command_line.clear()
 
     def send_command(self):
-        """Send command to the server."""
+        """ Send command to the server."""
         cmd = self.command_line.text()
         if bool(cmd):
             if len(self.history) > 0:
@@ -121,16 +111,18 @@ class Messanger(QWidget):
             self.command_line.clear()
 
     def update_console(self, msg):
-        """Update the console with the received message."""
+        """ Update the console with the received message."""
         log = f"<b style='color: #0000FF'>server></b> <i>{msg}</i>"
         self.console.append(log)
 
     def connect(self):
-        """Connect the UDP client."""
-        self.udp_client.msg_listener.received_msg.connect(self.update_console)
+        """ Connect the UDP client."""
+        self.udp_client.msg_listener.received_msg.connect(
+            self.update_console)
         self.is_connected = True
 
     def disconnect(self):
-        """Disconnect the UDP client."""
-        self.udp_client.msg_listener.received_msg.disconnect(self.update_console)
+        """ Disconnect the UDP client."""
+        self.udp_client.msg_listener.received_msg.disconnect(
+            self.update_console)
         self.is_connected = False

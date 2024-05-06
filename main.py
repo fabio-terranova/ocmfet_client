@@ -2,15 +2,20 @@
 Fabio Terranova - 2023
 
 Client for the OCMFET acquisition system developed by Elbatech
-"""
 
+TODO
+----
+- Add offline data plotting
+    - Local data
+    - Remote data (server)
+"""
 import sys
 
 import pyqtgraph as pg
 import yaml
 from PyQt5.QtWidgets import QApplication
 
-from gui.dialogs.SplashDialog import SplashDialog
+from gui.SplashDialog import SplashDialog
 
 __version__ = "2.5"
 author = "Fabio Terranova"
@@ -22,18 +27,16 @@ def config_pyqtgraph():
     """
     PyQtGraph configuration
     """
-    pg.setConfigOptions(
-        **{
-            # 'useOpenGL': True,
-            # 'antialias': True,
-            "background": "w",
-            "foreground": "k",
-            "leftButtonPan": False,
-        }
-    )
+    pg.setConfigOptions(**{
+        # 'useOpenGL': True,
+        # 'antialias': True,
+        'background': 'w',
+        'foreground': 'k',
+        'leftButtonPan': False,
+    })
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     # Configure PyQtGraph
     config_pyqtgraph()
 

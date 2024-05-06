@@ -11,45 +11,7 @@ import numpy as np
 from scipy.signal import filtfilt
 
 
-def bytes2samples(data, ch_type=2):
-    """Convert bytes to samples."""
-    if ch_type == 1:
-        # 2Bytes(MSB2|MSB1)|2Bytes(LSW1)|2Bytes(LSW2)|...
-
-        msb2 = np.array(data[0::6])
-        msb1 = np.array(data[1::6])
-        lsw1 = np.bitwise_or(
-            np.left_shift(np.array(data[2::6]), 8), np.array(data[3::6])
-        )
-        lsw2 = np.bitwise_or(
-            np.left_shift(np.array(data[4::6]), 8), np.array(data[5::6])
-        )
-
-        p1 = np.bitwise_or(np.left_shift(msb1, 16), lsw1)
-        p2 = np.bitwise_or(np.left_shift(msb2, 16), lsw2)
-
-        # alternate p1 and p2
-        points = np.empty((2 * len(p1),), dtype=p1.dtype)
-        points[0::2] = p1
-        points[1::2] = p2
-
-        # Two's complement
-        points[points >= 0x7FFFFF] -= 0x1000000
-
-        current = 5 / 0x7FFFFF * points / 500000
-    else:
-        most_sig = data[0::2]
-        least_sig = data[1::2]
-
-        d = np.left_shift(most_sig, 8) + least_sig
-        r = np.double(np.uint16(np.int16(d + 0x8000)))
-        f = r * 10 / 65536.0 - 5
-        current = f * 2 / 1e6  # uA to A
-
-    return current
-
-
-class DataProcessor:
+class DataProcessor():
     """
     DataProcessor
 
@@ -127,22 +89,21 @@ class DataProcessor:
 
     def __init__(self, n, fs, max_time, filters=[]):
         self.n = n
-        self.fs = fs * 1e3
+        self.fs = fs*1e3
         self.max_time = max_time
-        self.max_samples = int(self.fs * self.max_time)
+        self.max_samples = int(self.fs*self.max_time)
         self.filters = filters
 
         self.init_data()
 
     def init_data(self):
-        """ "
+        """"
         Initialize the data structure of the DataProcessor object.
         """
-        self.max_samples = int(self.fs * self.max_time)
-        if hasattr(self, "data"):
-            self.data = [
-                deque(self.data[i], maxlen=self.max_samples) for i in range(self.n)
-            ]
+        self.max_samples = int(self.fs*self.max_time)
+        if hasattr(self, 'data'):
+            self.data = [deque(self.data[i], maxlen=self.max_samples)
+                         for i in range(self.n)]
             self.ptr = len(self.data[0])
         else:
             self.data = [deque(maxlen=self.max_samples) for _ in range(self.n)]
@@ -157,7 +118,7 @@ class DataProcessor:
         fs : scalar
             Sample rate in kHz
         """
-        self.fs = fs * 1e3
+        self.fs = fs*1e3
         self.init_data()
 
     def change_max_time(self, max_time):
@@ -199,7 +160,7 @@ class DataProcessor:
         data : ndarray
             Filtered data.
         """
-        for b, a in self.filters:
+        for (b, a) in self.filters:
             data = filtfilt(b, a, data)
 
         return data
@@ -219,8 +180,8 @@ class DataProcessor:
         for i in range(self.n):
             if self.ptr > self.max_samples:
                 self.data[i].popleft()
-            self.data[i].extend(data[i :: self.n])
-        self.ptr += len(data) // self.n  # Update pointer
+            self.data[i].extend(data[i::self.n])
+        self.ptr += len(data)//self.n  # Update pointer
 
     def get_data(self):
         """
@@ -246,15 +207,3 @@ class DataProcessor:
         self.ptr = 0
         for i in range(self.n):
             self.data[i].clear()
-
-
-if __name__ == "__main__":
-    # test bytes2samples
-    values = "ac ca 5c c5 a3 3a 53 35 ca ac c5 5c 3a a3 35 53 11 11 22 22 33 33 44 44 55 55 66 66 77 77 88 88"
-    # values is a string of hex values
-    data = np.array([int(x, 16) for x in values.split()])
-
-    samples = bytes2samples(data)
-
-    for i in range(0, len(samples)):
-        print(f"Channel {i+1}: {samples[i]} A")

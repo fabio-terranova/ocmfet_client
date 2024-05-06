@@ -1,29 +1,18 @@
+import numpy as np
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import (
-    QCheckBox,
-    QComboBox,
-    QDialog,
-    QGridLayout,
-    QHBoxLayout,
-    QLabel,
-    QPushButton,
-    QRadioButton,
-    QStyle,
-    QToolButton,
-    QVBoxLayout,
-)
+from PyQt5.QtWidgets import (QCheckBox, QComboBox, QDialog, QGridLayout,
+                             QHBoxLayout, QLabel, QPushButton, QRadioButton,
+                             QStyle, QToolButton, QVBoxLayout)
 
-from gui.widgets.DataProcessing import DataProcessingWidget
-from gui.widgets.MultiGraph import (
-    MultiGraphPSDWidget,
-    MultiGraphSpectrogramWidget,
-    MultiGraphWidget,
-)
-from utils.formatting import s2string
+from gui.DataProcessing import DataProcessingWidget
+from gui.MultiGraph import (MultiGraphPSDWidget, MultiGraphSpectrogramWidget,
+                            MultiGraphWidget)
+from utils.formatting import bytes2samples, s2string
 from utils.processing import DataProcessor
 
 
 class ChannelSelectionDialog(QDialog):
+
     def __init__(self, config, parent=None):
         super().__init__(parent)
 
@@ -41,7 +30,8 @@ class ChannelSelectionDialog(QDialog):
         for ch in self.channels:
             checkbox = QCheckBox(ch["name"])
             checkbox.setChecked(True)
-            checkbox.stateChanged.connect(self.update_channels)
+            checkbox.stateChanged.connect(
+                self.update_channels)
             self.ch_checkboxes.append(checkbox)
             self.grid.addWidget(checkbox, ch["coords"][0], ch["coords"][1])
 
@@ -74,6 +64,7 @@ class ChannelSelectionDialog(QDialog):
 
 
 class PlotDialog(QDialog):
+
     def __init__(self, config, data_listener, parent=None):
         super().__init__(parent)
 
@@ -85,10 +76,18 @@ class PlotDialog(QDialog):
         self.bandpass = config["bandpass"]
         self.notch = config["notch"]
 
-        self.data_processer = DataProcessor(self.n_channels, self.fs, self.tr)
+        self.data_processer = DataProcessor(
+            self.n_channels,
+            self.fs,
+            self.tr
+        )
 
         self.processing_widget = DataProcessingWidget(
-            self.fs, self.data_processer, self.bandpass, self.notch, self
+            self.fs,
+            self.data_processer,
+            self.bandpass,
+            self.notch,
+            self
         )
 
         self.channel_selection_dialog = ChannelSelectionDialog(config, self)
@@ -102,25 +101,40 @@ class PlotDialog(QDialog):
         # add maximize button
         self.setWindowFlags(self.windowFlags() | Qt.WindowMaximizeButtonHint)
 
-        self.multi_graph = MultiGraphWidget(self.channels, self.fs, self.tr, self)
+        self.multi_graph = MultiGraphWidget(
+            self.channels,
+            self.fs,
+            self.tr,
+            self
+        )
 
-        self.psd_widget = MultiGraphPSDWidget(self.channels, self.fs, self.tr, self)
+        self.psd_widget = MultiGraphPSDWidget(
+            self.channels,
+            self.fs,
+            self.tr,
+            self
+        )
         self.psd_widget.hide()
 
         self.spectral_widget = MultiGraphSpectrogramWidget(
-            self.channels, self.fs, self.tr, self
+            self.channels,
+            self.fs,
+            self.tr,
+            self
         )
         self.spectral_widget.hide()
 
         self.glued_checkbox = QCheckBox("Glued")
         self.glued_checkbox.setChecked(True)
-        self.glued_checkbox.setToolTip("Glue the plot dialog to the main window")
+        self.glued_checkbox.setToolTip(
+            "Glue the plot dialog to the main window")
         self.timeseries_radio = QRadioButton("Time series")
         self.timeseries_radio.setChecked(True)
         self.timeseries_radio.clicked.connect(self.change_plot)
         self.compact_view_checkbox = QCheckBox("Compact")
         self.compact_view_checkbox.setChecked(False)
-        self.compact_view_checkbox.stateChanged.connect(self.multi_graph.set_compact)
+        self.compact_view_checkbox.stateChanged.connect(
+            self.multi_graph.set_compact)
         self.psd_radio = QRadioButton("PSD")
         self.psd_radio.clicked.connect(self.change_plot)
         self.spectrogram_radio = QRadioButton("Spectrogram")
@@ -128,18 +142,23 @@ class PlotDialog(QDialog):
         self.clear_button = QPushButton("Clear", self)
         self.clear_button.clicked.connect(self.clear_plots)
         self.stream_button = QToolButton(self)
-        self.stream_button.setIcon(self.style().standardIcon(QStyle.SP_MediaPause))
+        self.stream_button.setIcon(
+            self.style().standardIcon(QStyle.SP_MediaPause))
         self.stream_button.setToolTip("Pause/resume streaming")
         self.stream_button.setEnabled(self.data_listener.listening)
         self.stream_button.clicked.connect(self.pause_plots)
         self.time_range_label = QLabel("Time range")
         self.time_range_combo = QComboBox(self)
-        self.time_range_combo.addItems([s2string(tr) for tr in self.time_ranges])
-        self.time_range_combo.setCurrentIndex(self.time_ranges.index(self.tr))
-        self.time_range_combo.activated.connect(self.update_time_range)
+        self.time_range_combo.addItems(
+            [s2string(tr) for tr in self.time_ranges])
+        self.time_range_combo.setCurrentIndex(
+            self.time_ranges.index(self.tr))
+        self.time_range_combo.activated.connect(
+            self.update_time_range)
         self.channel_sel_button = QPushButton("Channels", self)
         self.channel_sel_button.setToolTip("Select channels to plot")
-        self.channel_sel_button.clicked.connect(self.channel_selection_dialog.exec_)
+        self.channel_sel_button.clicked.connect(
+            self.channel_selection_dialog.exec_)
 
         self.layout = QVBoxLayout()
         self.layout.addWidget(self.multi_graph)
@@ -177,8 +196,7 @@ class PlotDialog(QDialog):
         data : bytes
             Data to be plotted.
         """
-        # points = bytes2samples(np.array(data))
-        points = data
+        points = bytes2samples(np.array(data))
 
         self.data_processer.update_data(points)
         if self.multi_graph.isVisible():
@@ -198,10 +216,12 @@ class PlotDialog(QDialog):
         """
         if self.data_listener.listening:
             self.data_listener.stop_listening()
-            self.stream_button.setIcon(self.style().standardIcon(QStyle.SP_MediaPlay))
+            self.stream_button.setIcon(
+                self.style().standardIcon(QStyle.SP_MediaPlay))
         else:
             self.data_listener.start_listening()
-            self.stream_button.setIcon(self.style().standardIcon(QStyle.SP_MediaPause))
+            self.stream_button.setIcon(
+                self.style().standardIcon(QStyle.SP_MediaPause))
 
     def update_time_range(self, index):
         """
@@ -214,7 +234,7 @@ class PlotDialog(QDialog):
         """
         self.time_range = self.time_ranges[index]
         self.data_listener.set_bytes_to_emit(
-            self.n_channels * int(self.fs * self.time_range) * 100
+            200*self.n_channels*int(self.fs*self.time_range)
         )
         self.data_processer.change_max_time(self.time_range)
         self.multi_graph.change_time_range(self.time_range)
@@ -239,7 +259,8 @@ class PlotDialog(QDialog):
             self.psd_widget.hide()
             self.spectral_widget.show()
 
-        self.compact_view_checkbox.setEnabled(self.timeseries_radio.isChecked())
+        self.compact_view_checkbox.setEnabled(
+            self.timeseries_radio.isChecked())
 
     def connect(self):
         """
@@ -263,7 +284,8 @@ class PlotDialog(QDialog):
     def showEvent(self, event):
         self.connect()
         self.data_listener.start_listening()
-        self.stream_button.setIcon(self.style().standardIcon(QStyle.SP_MediaPause))
+        self.stream_button.setIcon(
+            self.style().standardIcon(QStyle.SP_MediaPause))
 
         # title_bar_height = self.parent().frameGeometry().height() - \
         #     self.parent().height()
@@ -271,7 +293,7 @@ class PlotDialog(QDialog):
             self.parent().x() + self.parent().width(),
             self.parent().y(),
             self.sizeHint().width(),
-            int(self.sizeHint().width() * 3 / 4),
+            int(self.sizeHint().width()*3/4)
         )
         event.accept()
 

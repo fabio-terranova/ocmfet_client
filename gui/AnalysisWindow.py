@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QFileDialog, QMainWindow, QPushButton, QVBoxLayout, QWidget
 
-from gui.widgets.MultiGraph import MultiGraphWidget
+from gui.MultiGraph import MultiGraphWidget
 from network.listeners import DataReader
 from utils.processing import DataProcessor
 
@@ -15,6 +15,9 @@ class AnalysisWindow(QMainWindow):
         self.tr = config["time_range"]
 
         self.data_processor = DataProcessor(len(self.channels), self.fs, self.tr)
+
+        self.data_reader = DataReader(self)
+        self.data_reader.data_read.connect(self.update_data)
 
         self.initUI()
 
@@ -51,7 +54,5 @@ class AnalysisWindow(QMainWindow):
                 time = f_size / 4 / self.fs / 1e3
                 self.multi_graph.change_time_range(time)
                 self.data_processor.change_max_time(time)
-            
-            self.data_reader = DataReader(file)
-            self.data_reader.data_read.connect(self.update_data)
-            self.data_reader.run()
+
+            self.data_reader.open_file(file)

@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "f32de51f8d51c3da4705e3805cfd6588fb958892b0135139964008e847e877ae"
+            "sha256": "59061b1ebcd0761894d3cd94936bfa6c8fd75e4448b1a69b5aba904ad23498fd"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -57,10 +57,6 @@
             ],
             "markers": "python_version >= '3.9'",
             "version": "==1.26.4"
-        },
-        "ocppmfet": {
-            "path": "./oCPPmfet",
-            "version": "==0.0.1"
         },
         "pyqt5": {
             "hashes": [

@@ -8,7 +8,6 @@ pyqtgraph = "*"
 pyqt5 = "*"
 pyyaml = "*"
 scipy = "*"
-ocppmfet = {path = "./oCPPmfet"}
 
 [dev-packages]
 

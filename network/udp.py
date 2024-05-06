@@ -1,6 +1,6 @@
 import socket
 
-from .listeners import DataListener, MessageListener
+from .listeners import MessageListener, DataListener
 
 
 class MsgDataClient:
@@ -14,7 +14,8 @@ class MsgDataClient:
         self.data_socket.bind(("", self.data_port))
 
         self.msg_listener = MessageListener(self.msg_socket, msg_len)
-        self.data_listener = DataListener(self.data_socket, data_len, bytes_to_emit)
+        self.data_listener = DataListener(
+            self.data_socket, data_len, bytes_to_emit)
 
     def start_listening(self):
         self.msg_listener.start()

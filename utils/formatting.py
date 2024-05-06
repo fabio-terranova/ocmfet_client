@@ -4,6 +4,48 @@ import time
 import numpy as np
 
 
+def bytes2samples(data, ch_type=2):
+    """Convert bytes to samples."""
+    if ch_type == 1:
+        # 2Bytes(MSB2|MSB1)|2Bytes(LSW1)|2Bytes(LSW2)|...
+
+        msb2 = np.array(data[0::6])
+        msb1 = np.array(data[1::6])
+        lsw1 = np.bitwise_or(
+            np.left_shift(np.array(data[2::6]), 8), np.array(data[3::6])
+        )
+        lsw2 = np.bitwise_or(
+            np.left_shift(np.array(data[4::6]), 8), np.array(data[5::6])
+        )
+
+        p1 = np.bitwise_or(np.left_shift(msb1, 16), lsw1)
+        p2 = np.bitwise_or(np.left_shift(msb2, 16), lsw2)
+
+        # alternate p1 and p2
+        points = np.empty((2 * len(p1),), dtype=p1.dtype)
+        points[0::2] = p1
+        points[1::2] = p2
+
+        # Two's complement
+        points[points >= 0x7FFFFF] -= 0x1000000
+
+        current = 5 / 0x7FFFFF * points / 500000
+    else:
+        most_sig = data[0::2]
+        least_sig = data[1::2]
+
+        print(hex(most_sig[0]), hex(least_sig[0]))
+        print(hex(np.left_shift(most_sig[0], 8) + least_sig[0]))
+
+        d = np.left_shift(most_sig, 8) + least_sig
+        print(hex(d[0]))
+        r = np.double(np.uint16(np.int16(d + 0x8000)))
+        f = r * 10 / 65536.0 - 5
+        current = f * 2 / 1e6  # uA to A
+
+    return current
+
+
 def size2string(data):
     """Convert size in bytes to string."""
     if data < 1e3:
@@ -103,3 +145,15 @@ def khertz2string(f):
 def string2T(fs):
     """Returns period in us from string"""
     return float(1 / string2hertz(fs)) * 1e6
+
+
+if __name__ == "__main__":
+    # test bytes2samples
+    values = "ac ca 5c c5 a3 3a 53 35 ca ac c5 5c 3a a3 35 53 11 11 22 22 33 33 44 44 55 55 66 66 77 77 88 88"
+    # values is a string of hex values
+    data = np.array([int(x, 16) for x in values.split()])
+
+    samples = bytes2samples(data)
+
+    for i in range(0, len(samples)):
+        print(f"Channel {i+1}: {samples[i]} A")
