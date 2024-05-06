@@ -1,12 +1,23 @@
 from PyQt5.QtCore import QTimer
-from PyQt5.QtWidgets import (QCheckBox, QGridLayout, QGroupBox, QHBoxLayout,
-                             QLabel, QLineEdit, QMainWindow, QPushButton,
-                             QSpinBox, QStyle, QToolButton, QVBoxLayout,
-                             QWidget)
+from PyQt5.QtWidgets import (
+    QCheckBox,
+    QGridLayout,
+    QGroupBox,
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QMainWindow,
+    QPushButton,
+    QSpinBox,
+    QStyle,
+    QToolButton,
+    QVBoxLayout,
+    QWidget,
+)
 
-from gui.Controller import ControllerDialog
-from gui.Messanger import Messanger
-from gui.PlotDialog import PlotDialog
+from gui.dialogs.PlotDialog import PlotDialog
+from gui.widgets.Controller import ControllerDialog
+from gui.widgets.Messanger import Messanger
 from network.udp import MsgDataClient
 from utils.formatting import s2hhmmss
 
@@ -45,28 +56,24 @@ class LiveWindow(QMainWindow):
             self.msg_port,
             self.data_port,
             config["BUF_LEN"],
-            200*self.n_channels*int(self.fs*self.time_range),
+            self.n_channels * int(self.fs * self.time_range) * 100,
         )
 
-        self.msg_widget = Messanger(
-            config["commands"], self.udp_client, self
-        )
+        self.msg_widget = Messanger(config["commands"], self.udp_client, self)
 
-        self.plot_dialog = PlotDialog(
-            config,
-            self.udp_client.data_listener,
-            self
-        )
+        self.plot_dialog = PlotDialog(config, self.udp_client.data_listener, self)
 
         self.ocmfet_dialog = ControllerDialog(
-            [ch for ch in self.channels if ch["type"] >= 1],
-            self.udp_client,
-            self
+            [ch for ch in self.channels if ch["type"] >= 1], self.udp_client, self
         )
 
         self.initUI()
-        self.setGeometry(self.sizeHint().width(), 0, self.sizeHint().width(),
-                         self.sizeHint().height())
+        self.setGeometry(
+            self.sizeHint().width(),
+            0,
+            self.sizeHint().width(),
+            self.sizeHint().height(),
+        )
         self.startup()
 
     def initUI(self):
@@ -82,14 +89,12 @@ class LiveWindow(QMainWindow):
         self.plot_button.clicked.connect(self.plot_dialog.show)
 
         self.record_button = QToolButton(self)
-        self.record_button.setIcon(
-            self.style().standardIcon(QStyle.SP_MediaPlay))
+        self.record_button.setIcon(self.style().standardIcon(QStyle.SP_MediaPlay))
         self.record_button.setToolTip("Start/save recording")
         self.record_button.clicked.connect(self.record_cb)
 
         self.playpause_button = QToolButton(self)
-        self.playpause_button.setIcon(
-            self.style().standardIcon(QStyle.SP_MediaPause))
+        self.playpause_button.setIcon(self.style().standardIcon(QStyle.SP_MediaPause))
         self.playpause_button.setToolTip("Pause/resume recording")
         self.playpause_button.clicked.connect(self.pause_cb)
         self.playpause_button.setEnabled(False)
@@ -108,8 +113,7 @@ class LiveWindow(QMainWindow):
 
         self.timer_checkbox = QCheckBox("Timed recording", self)
         self.timer_checkbox.setChecked(True)
-        self.timer_checkbox.stateChanged.connect(
-            self.timer_spin_box.setEnabled)
+        self.timer_checkbox.stateChanged.connect(self.timer_spin_box.setEnabled)
 
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_timer)
@@ -117,7 +121,8 @@ class LiveWindow(QMainWindow):
 
         self.name_line_edit = QLineEdit(self)
         self.name_line_edit.setPlaceholderText(
-            "Enter a name for the file (default: data)")
+            "Enter a name for the file (default: data)"
+        )
         self.name_line_edit.setMaxLength(32)
 
         self.tag_line_edit = QLineEdit(self)
@@ -186,10 +191,10 @@ class LiveWindow(QMainWindow):
         self.elapsed_time += 1
         if self.timer_checkbox.isChecked():
             self.recording_time_label.setText(
-                f"{s2hhmmss(self.elapsed_time)}/{s2hhmmss(self.timer_spin_box.value())}")
+                f"{s2hhmmss(self.elapsed_time)}/{s2hhmmss(self.timer_spin_box.value())}"
+            )
         else:
-            self.recording_time_label.setText(
-                f"{s2hhmmss(self.elapsed_time)}")
+            self.recording_time_label.setText(f"{s2hhmmss(self.elapsed_time)}")
 
         if self.timer_checkbox.isChecked():
             if self.elapsed_time >= self.timer_spin_box.value():
@@ -218,7 +223,8 @@ class LiveWindow(QMainWindow):
                 self.paused = True
 
                 self.playpause_button.setIcon(
-                    self.style().standardIcon(QStyle.SP_MediaPlay))
+                    self.style().standardIcon(QStyle.SP_MediaPlay)
+                )
                 self.tag_button.setEnabled(False)
             else:  # Resume recording
                 self.start_timer()
@@ -226,7 +232,8 @@ class LiveWindow(QMainWindow):
                 self.paused = False
 
                 self.playpause_button.setIcon(
-                    self.style().standardIcon(QStyle.SP_MediaPause))
+                    self.style().standardIcon(QStyle.SP_MediaPause)
+                )
                 self.tag_button.setEnabled(True)
 
     def record_cb(self):
@@ -236,7 +243,8 @@ class LiveWindow(QMainWindow):
             self.recording = True
 
             self.record_button.setIcon(
-                self.style().standardIcon(QStyle.SP_DialogSaveButton))
+                self.style().standardIcon(QStyle.SP_DialogSaveButton)
+            )
             self.tag_button.setEnabled(True)
             self.playpause_button.setEnabled(True)
         else:  # Stop recording
@@ -244,8 +252,7 @@ class LiveWindow(QMainWindow):
             self.recording = False
             self.save_recording()
 
-            self.record_button.setIcon(
-                self.style().standardIcon(QStyle.SP_MediaPlay))
+            self.record_button.setIcon(self.style().standardIcon(QStyle.SP_MediaPlay))
             self.tag_button.setEnabled(False)
             self.playpause_button.setEnabled(False)
 

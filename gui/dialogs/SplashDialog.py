@@ -2,9 +2,9 @@ import yaml
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QDialog, QGridLayout, QLabel, QPushButton
 
-from gui.LiveWindow import LiveWindow
 from gui.AnalysisWindow import AnalysisWindow
-from gui.ConfigDialog import ConfigDialog
+from gui.dialogs.ConfigDialog import ConfigDialog
+from gui.LiveWindow import LiveWindow
 
 
 class SplashDialog(QDialog):
@@ -27,12 +27,9 @@ class SplashDialog(QDialog):
         self.version = QLabel(f"v{self.version}")
         self.version.setAlignment(Qt.AlignRight)
         self.label.setAlignment(Qt.AlignCenter)
-        self.acq_btn = QPushButton(
-            "Live acquisition", clicked=self.open_live)
-        self.analysis_btn = QPushButton(
-            "Offline analysis", clicked=self.open_analysis)
-        self.config_btn = QPushButton(
-            "Configuration", clicked=self.open_config)
+        self.acq_btn = QPushButton("Live acquisition", clicked=self.open_live)
+        self.analysis_btn = QPushButton("Offline analysis", clicked=self.open_analysis)
+        self.config_btn = QPushButton("Configuration", clicked=self.open_config)
 
         self.layout = QGridLayout()
         self.layout.addWidget(self.label, 0, 0, 1, 3)

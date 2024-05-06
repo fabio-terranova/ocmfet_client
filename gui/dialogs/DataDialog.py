@@ -5,8 +5,13 @@ import numpy as np
 import pandas as pd
 from PyQt5.QtCore import QSize, QThread, pyqtSignal
 from PyQt5.QtGui import QStandardItem, QStandardItemModel
-from PyQt5.QtWidgets import (QDialog, QFileDialog, QProgressDialog, QTreeView,
-                             QVBoxLayout)
+from PyQt5.QtWidgets import (
+    QDialog,
+    QFileDialog,
+    QProgressDialog,
+    QTreeView,
+    QVBoxLayout,
+)
 
 from utils.formatting import bytes2samples
 
@@ -23,18 +28,21 @@ class Downloader(QThread):
 
     def download_data(self, name, path, size):
         file_name, _ = QFileDialog.getSaveFileName(
-            self.parent(), "Save file", name + ".csv", "All files (*)")
+            self.parent(), "Save file", name + ".csv", "All files (*)"
+        )
         if file_name:
             if os.path.exists(file_name):
                 os.remove(file_name)
             pd.DataFrame(columns=["Ch. 1", "Ch. 2"]).to_csv(
-                file_name, index=False, header=True)
+                file_name, index=False, header=True
+            )
             self.file_size = size
-            self.udp_client.data_listener.set_bytes_to_emit(int(size/32))
+            self.udp_client.data_listener.set_bytes_to_emit(int(size / 32))
             self.udp_client.data_listener.start_listening()
             self.udp_client.send_message("getf {}".format(path))
             self.udp_client.data_listener.received_data.connect(
-                lambda data: self.write_to_file(file_name, data))
+                lambda data: self.write_to_file(file_name, data)
+            )
 
     def stop_download(self):
         self.udp_client.data_listener.stop_listening()
@@ -46,9 +54,8 @@ class Downloader(QThread):
             # write to csv file
             new_data = np.frombuffer(data, dtype=np.uint8)
             new_data = [bytes2samples(new_data[::2]), bytes2samples(new_data[1::2])]
-            pd.DataFrame(new_data).to_csv(
-                file, index=False, header=False, mode="a")
-            
+            pd.DataFrame(new_data).to_csv(file, index=False, header=False, mode="a")
+
         self.size_counter += len(data)
         self.progress.emit(self.size_counter)
         print(self.size_counter, self.file_size)
@@ -57,7 +64,6 @@ class Downloader(QThread):
 
 
 class DataDialog(QDialog):
-
     def __init__(self, udp_client, parent=None):
         super().__init__(parent)
         self.udp_client = udp_client
@@ -92,7 +98,7 @@ class DataDialog(QDialog):
         name = self.model.itemFromIndex(index.siblingAtColumn(0)).text()
         path = self.model.itemFromIndex(index.siblingAtColumn(4)).text()
         size = int(self.model.itemFromIndex(index.siblingAtColumn(3)).text())
-        
+
         self.progress_dialog = QProgressDialog(self)
         self.progress_dialog.setLabelText("Downloading {}".format(name))
         self.progress_dialog.setRange(0, size)
@@ -141,7 +147,6 @@ class DataDialog(QDialog):
         if self.parent():
             self.parent().msg_widget.connect()
             self.parent().plot_dialog.connect()
-        self.udp_client.msg_listener.received_msg.disconnect(
-            self.populate_tree)
+        self.udp_client.msg_listener.received_msg.disconnect(self.populate_tree)
         self.clear_model()
         event.accept()
