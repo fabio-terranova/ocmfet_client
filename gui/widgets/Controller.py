@@ -1,5 +1,3 @@
-""" """
-
 import math
 
 from PyQt5.QtWidgets import (
