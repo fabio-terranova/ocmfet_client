@@ -54,9 +54,8 @@ class DataProcessor:
     """
     DataProcessor
 
-    This class is used to process the data from the acquisition system. It stores
-    the data in a deque object, and it can filter the data using the filters
-    defined in the filters attribute.
+    This class is used to process the data from the acquisition system. It stores the data in a
+    deque object, and it can filter the data using the filters defined in the filters attribute.
 
     Parameters
     ----------
@@ -70,9 +69,8 @@ class DataProcessor:
         Maximum time in s
 
     filters : list
-        List of tuples with the filter coefficients. Each tuple should have
-        two arrays, the numerator and the denominator of the filter transfer
-        function.
+        List of tuples with the filter coefficients. Each tuple should have two arrays, the
+        numerator and the denominator of the filter transfer function.
 
     Attributes
     ----------
@@ -89,9 +87,8 @@ class DataProcessor:
         Maximum number of samples per channel
 
     filters : list
-        List of tuples with the filter coefficients. Each tuple should have
-        two arrays, the numerator and the denominator of the filter transfer
-        function.
+        List of tuples with the filter coefficients. Each tuple should have two arrays, the
+        numerator and the denominator of the filter transfer function.
 
     data : list
         List of deques with the data of each channel
@@ -180,9 +177,8 @@ class DataProcessor:
         Parameters
         ----------
         filters : list
-            List of tuples with the filter coefficients. Each tuple should have
-            two arrays, the numerator and the denominator of the filter transfer
-            function.
+            List of tuples with the filter coefficients. Each tuple should have two arrays, the
+            numerator and the denominator of the filter transfer function.
         """
         self.filters = filters
 
@@ -213,9 +209,9 @@ class DataProcessor:
         Parameters
         ----------
         data : array-like
-            New samples to be added to the data. The data should be in the form
-            [ch1_sample1, ch2_sample1, ..., ch1_sample2, ch2_sample2, ...], i.e.,
-            the samples of each channel should be interleaved.
+            New samples to be added to the data. The data should be in the form [ch1_sample1,
+            ch2_sample1, ..., ch1_sample2, ch2_sample2, ...], i.e., the samples of each channel
+            should be interleaved.
         """
         for i in range(self.n):
             if self.ptr > self.max_samples:
@@ -225,15 +221,14 @@ class DataProcessor:
 
     def get_data(self):
         """
-        Get the data stored in the DataProcessor object. If filters are defined,
-        the data is filtered before being returned.
+        Get the data stored in the DataProcessor object. If filters are defined, the data is
+        filtered before being returned.
 
         Returns
         -------
         data : ndarray
-            Data stored in the DataProcessor object. The data is in the form
-            [ch1_samples, ch2_samples, ...], i.e., the samples of each channel
-            are stored in a separate array.
+            Data stored in the DataProcessor object. The data is in the form [ch1_samples,
+            ch2_samples, ...], i.e., the samples of each channel are stored in a separate array.
         """
         if self.filters:
             return np.array([self.filter_data(d) for d in self.data])

@@ -18,7 +18,7 @@ def size2string(data):
 
 def datetime_range(n_samples, dt):
     """
-    Returns a range of timestamps from now to now + dt.
+    Returns a range of timestamps from now to (now + dt).
 
     Parameters
     ----------

@@ -16,8 +16,8 @@ class ConfigDialog(QDialog):
     """
     ConfigDialog class
 
-    The dialog allows the user to load a configuration file. The user can run the application
-    with the default configuration or load a custom configuration.
+    The dialog allows the user to load a configuration file. The user can run the application with
+    the default configuration or load a custom configuration.
     The default configuration is defined in the default.yaml file in the configs folder.
 
     Parameters

@@ -17,8 +17,8 @@ class MultiGraphWidget(pg.GraphicsLayoutWidget):
     """
     MultiGraphWidget
 
-    This class uses the GraphicsLayoutWidget class to create a multi-graph widget.
-    The plots are arranged in a grid layout defined by the channels variable.
+    This class uses the GraphicsLayoutWidget class to create a multi-graph widget. The plots are
+    arranged in a grid layout defined by the channels variable.
 
     Parameters
     -----------

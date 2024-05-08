@@ -1,4 +1,12 @@
-from PyQt5.QtWidgets import QFileDialog, QMainWindow, QPushButton, QGridLayout, QWidget, QComboBox, QLabel
+from PyQt5.QtWidgets import (
+    QFileDialog,
+    QMainWindow,
+    QPushButton,
+    QGridLayout,
+    QWidget,
+    QComboBox,
+    QLabel,
+)
 from PyQt5.QtCore import Qt
 
 from gui.widgets.MultiGraph import MultiGraphWidget
@@ -6,6 +14,7 @@ from network.listeners import DataReader
 from utils.processing import DataProcessor
 
 import os
+
 
 class AnalysisWindow(QMainWindow):
     def __init__(self, title, config):
@@ -60,7 +69,7 @@ class AnalysisWindow(QMainWindow):
         file = self.files_combo.itemText(idx)
         f_name = os.path.basename(file)
         self.name_label.setText(f_name)
-            
+
         with open(file, "rb") as f:
             f_size = f.seek(0, 2)
             f.seek(0, 0)
@@ -74,10 +83,14 @@ class AnalysisWindow(QMainWindow):
 
     def open_folder(self):
         # Open file dialog
-        folder = QFileDialog.getExistingDirectory(self, "Open folder")   
-        
+        folder = QFileDialog.getExistingDirectory(self, "Open folder")
+
         if folder:
-            files = [os.path.join(folder, file) for file in os.listdir(folder) if file.endswith(".bin")]
+            files = [
+                os.path.join(folder, file)
+                for file in os.listdir(folder)
+                if file.endswith(".bin")
+            ]
             self.files_combo.clear()
             self.files_combo.addItems(files)
             self.files_combo.setCurrentIndex(0)
@@ -85,8 +98,10 @@ class AnalysisWindow(QMainWindow):
 
     def open_file(self):
         # Open file dialog
-        file, _ = QFileDialog.getOpenFileName(self, "Open file", "", "Binary files (*.bin)")   
-        
+        file, _ = QFileDialog.getOpenFileName(
+            self, "Open file", "", "Binary files (*.bin)"
+        )
+
         if file:
             self.files_combo.addItem(file)
             self.files_combo.setCurrentIndex(self.files_combo.count() - 1)
