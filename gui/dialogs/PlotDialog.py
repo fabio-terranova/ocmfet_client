@@ -177,7 +177,6 @@ class PlotDialog(QDialog):
         data : bytes
             Data to be plotted.
         """
-        # points = bytes2samples(np.array(data))
         points = data
 
         self.data_processer.update_data(points)
