@@ -1,4 +1,5 @@
 from PyQt5.QtWidgets import QFileDialog, QMainWindow, QPushButton, QGridLayout, QWidget, QComboBox, QLabel
+from PyQt5.QtCore import Qt
 
 from gui.widgets.MultiGraph import MultiGraphWidget
 from network.listeners import DataReader
@@ -23,21 +24,29 @@ class AnalysisWindow(QMainWindow):
         self.setWindowTitle(self.win_title)
         self.setMinimumSize(500, 500)
 
+        self.name_label = QLabel("Select a folder")
+        self.name_label.setStyleSheet("font-weight: bold")
+        self.name_label.setAlignment(Qt.AlignmentFlag(4))
+
         self.multi_graph = MultiGraphWidget(self.channels, self.fs, self.tr, self)
 
         self.files_label = QLabel("Files: ")
         self.files_combo = QComboBox()
         self.files_combo.activated.connect(self.update_file)
 
-        self.open_button = QPushButton("Open folder")
-        self.open_button.clicked.connect(self.open_folder)
+        self.open_folder_button = QPushButton("Open folder")
+        self.open_folder_button.clicked.connect(self.open_folder)
+        self.open_file_button = QPushButton("Open file")
+        self.open_file_button.clicked.connect(self.open_file)
 
         self.layout = QGridLayout()
-        self.layout.addWidget(self.multi_graph, 0, 0, 1, 3)
         self.layout.setColumnStretch(1, 1)
-        self.layout.addWidget(self.files_label, 1, 0, 1, 1)
-        self.layout.addWidget(self.files_combo, 1, 1, 1, 1)
-        self.layout.addWidget(self.open_button, 1, 2, 1, 1)
+        self.layout.addWidget(self.name_label, 0, 0, 1, 4)
+        self.layout.addWidget(self.multi_graph, 1, 0, 1, 4)
+        self.layout.addWidget(self.files_label, 2, 0, 1, 1)
+        self.layout.addWidget(self.files_combo, 2, 1, 1, 1)
+        self.layout.addWidget(self.open_folder_button, 2, 2, 1, 1)
+        self.layout.addWidget(self.open_file_button, 2, 3, 1, 1)
 
         self.central_widget = QWidget()
         self.central_widget.setLayout(self.layout)
@@ -49,6 +58,8 @@ class AnalysisWindow(QMainWindow):
 
     def update_file(self, idx):
         file = self.files_combo.itemText(idx)
+        f_name = os.path.basename(file)
+        self.name_label.setText(f_name)
             
         with open(file, "rb") as f:
             f_size = f.seek(0, 2)
@@ -71,3 +82,12 @@ class AnalysisWindow(QMainWindow):
             self.files_combo.addItems(files)
             self.files_combo.setCurrentIndex(0)
             self.update_file(0)
+
+    def open_file(self):
+        # Open file dialog
+        file, _ = QFileDialog.getOpenFileName(self, "Open file", "", "Binary files (*.bin)")   
+        
+        if file:
+            self.files_combo.addItem(file)
+            self.files_combo.setCurrentIndex(self.files_combo.count() - 1)
+            self.update_file(self.files_combo.count() - 1)
