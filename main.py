@@ -24,8 +24,8 @@ def config_pyqtgraph():
     """
     pg.setConfigOptions(
         **{
-            # 'useOpenGL': True,
-            # 'antialias': True,
+            # "useOpenGL": True,
+            # "antialias": True,
             "background": "w",
             "foreground": "k",
             "leftButtonPan": False,
