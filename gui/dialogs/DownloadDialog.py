@@ -1,19 +1,15 @@
 import json
-import os
 
-import numpy as np
-import pandas as pd
 from PyQt5.QtCore import QSize, QThread, pyqtSignal
 from PyQt5.QtGui import QStandardItem, QStandardItemModel
 from PyQt5.QtWidgets import (
     QDialog,
-    QFileDialog,
     QProgressDialog,
     QTreeView,
     QVBoxLayout,
 )
 
-from utils.formatting import bytes2samples
+from network.udp import MsgDataClient
 
 
 class Downloader(QThread):
@@ -26,48 +22,17 @@ class Downloader(QThread):
         self.file_size = 0
         self.old_bytes_to_emit = self.udp_client.data_listener.bytes_to_emit
 
-    def download_data(self, name, path, size):
-        file_name, _ = QFileDialog.getSaveFileName(
-            self.parent(), "Save file", name + ".csv", "All files (*)"
-        )
-        if file_name:
-            if os.path.exists(file_name):
-                os.remove(file_name)
-            pd.DataFrame(columns=["Ch. 1", "Ch. 2"]).to_csv(
-                file_name, index=False, header=True
-            )
-            self.file_size = size
-            self.udp_client.data_listener.set_bytes_to_emit(int(size / 32))
-            self.udp_client.data_listener.start_listening()
-            self.udp_client.send_message("getf {}".format(path))
-            self.udp_client.data_listener.received_data.connect(
-                lambda data: self.write_to_file(file_name, data)
-            )
 
-    def stop_download(self):
-        self.udp_client.data_listener.stop_listening()
-        self.udp_client.data_listener.set_bytes_to_emit(self.old_bytes_to_emit)
-        self.udp_client.data_listener.received_data.disconnect()
-
-    def write_to_file(self, file_name, data):
-        with open(file_name, "ab") as file:
-            # write to csv file
-            new_data = np.frombuffer(data, dtype=np.uint8)
-            new_data = [bytes2samples(new_data[::2]), bytes2samples(new_data[1::2])]
-            pd.DataFrame(new_data).to_csv(file, index=False, header=False, mode="a")
-
-        self.size_counter += len(data)
-        self.progress.emit(self.size_counter)
-        print(self.size_counter, self.file_size)
-        if self.size_counter >= self.file_size:
-            self.stop_download()
-
-
-class DataDialog(QDialog):
-    def __init__(self, udp_client, parent=None):
+class DownloadDialog(QDialog):
+    def __init__(self, config, parent=None):
         super().__init__(parent)
-        self.udp_client = udp_client
-        self.downloader = Downloader(udp_client)
+        self.server_ip = config["server_ip"]
+        self.msg_port = config["msg_port"]
+        self.data_port = config["data_port"]
+        self.udp_client = MsgDataClient(
+            self.server_ip, self.msg_port, self.data_port, config["BUF_LEN"]
+        )
+        self.downloader = Downloader(self.udp_client)
         self.json_string = ""
         self.columns = ["Name", "Duration", "Last modified"]
         self.init_ui()
