@@ -4,7 +4,9 @@ from .listeners import DataListener, MessageListener
 
 
 class MsgDataClient:
-    def __init__(self, host, msg_port, data_port, data_len, bytes_to_emit, msg_len=512):
+    def __init__(
+        self, host, msg_port, data_port, data_len, bytes_to_emit=1024, msg_len=512
+    ):
         self.host = host
         self.msg_port = msg_port
         self.data_port = data_port
