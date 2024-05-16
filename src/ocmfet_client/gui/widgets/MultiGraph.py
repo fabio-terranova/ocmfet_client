@@ -10,7 +10,7 @@ import pyqtgraph as pg
 from pyqtgraph.Qt import QtCore
 from scipy.signal import spectrogram, welch
 
-from utils.formatting import datetime_range, sup
+from ocmfet_client.utils.formatting import datetime_range, sup
 
 
 class MultiGraphWidget(pg.GraphicsLayoutWidget):
