@@ -11,6 +11,8 @@ from PyQt5.QtWidgets import (
     QWidget,
 )
 
+from ocmfet_client.utils import config_path
+
 
 class ConfigDialog(QDialog):
     """
@@ -87,7 +89,7 @@ class ConfigDialog(QDialog):
 
     def save_config(self):
         file, _ = QFileDialog.getSaveFileName(
-            self, "Save configuration", "configs", "YAML files (*.yaml)"
+            self, "Save configuration", None, "YAML files (*.yaml)"
         )
         if file:
             with open(file, "w") as f:
@@ -100,7 +102,7 @@ class ConfigDialog(QDialog):
 
     def load_config(self):
         file, _ = QFileDialog.getOpenFileName(
-            self, "Load configuration", "configs", "YAML files (*.yaml)"
+            self, "Load configuration", str(config_path), "YAML files (*.yaml)"
         )
         if file:
             self.config = yaml.safe_load(open(file, "r"))

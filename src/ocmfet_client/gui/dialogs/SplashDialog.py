@@ -1,14 +1,12 @@
 import yaml
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QDialog, QGridLayout, QLabel, QPushButton
-from pathlib import Path
 
+from ocmfet_client.utils import config_path
 from ocmfet_client.gui.AnalysisWindow import AnalysisWindow
 from ocmfet_client.gui.dialogs.ConfigDialog import ConfigDialog
-from ocmfet_client.gui.LiveWindow import LiveWindow
 from ocmfet_client.gui.dialogs.DownloadDialog import DownloadDialog
-
-config_path = Path(__file__).parent / "../../configs/default.yaml"
+from ocmfet_client.gui.LiveWindow import LiveWindow
 
 
 class SplashDialog(QDialog):
