@@ -9,7 +9,7 @@ from PyQt5.QtWidgets import (
     QVBoxLayout,
 )
 
-from network.udp import MsgDataClient
+from ocmfet_client.network.udp import MsgDataClient
 
 
 class Downloader(QThread):
