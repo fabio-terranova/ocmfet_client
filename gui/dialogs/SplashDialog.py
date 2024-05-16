@@ -29,7 +29,7 @@ class SplashDialog(QDialog):
         self.version.setAlignment(Qt.AlignRight)
         self.label.setAlignment(Qt.AlignCenter)
         self.acq_btn = QPushButton("Live acquisition", clicked=self.open_live)
-        self.analysis_btn = QPushButton("Offline analysis", clicked=self.open_analysis)
+        self.analysis_btn = QPushButton("Analysis", clicked=self.open_analysis)
         self.download_btn = QPushButton("Downloader", clicked=self.open_downloader)
         self.config_btn = QPushButton("Configuration", clicked=self.open_config)
 
