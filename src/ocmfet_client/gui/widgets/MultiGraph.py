@@ -1,8 +1,8 @@
 """
 MultiGraph module
 
-This module contains the MultiGraphWidget class for plotting the data coming from
-the server in real-time.
+This module contains the MultiGraphWidget class for plotting the data coming from the server in
+real-time.
 """
 
 import numpy as np

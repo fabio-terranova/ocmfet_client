@@ -272,4 +272,5 @@ class LiveWindow(QMainWindow):
     def closeEvent(self, event):
         self.send_command("stop")
         self.udp_client.close()
+        self.plot_dialog.close()
         event.accept()

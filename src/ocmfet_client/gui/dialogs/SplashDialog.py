@@ -6,6 +6,7 @@ from pathlib import Path
 from ocmfet_client.gui.AnalysisWindow import AnalysisWindow
 from ocmfet_client.gui.dialogs.ConfigDialog import ConfigDialog
 from ocmfet_client.gui.LiveWindow import LiveWindow
+from ocmfet_client.gui.dialogs.DownloadDialog import DownloadDialog
 
 config_path = Path(__file__).parent / "../../configs/default.yaml"
 
@@ -31,15 +32,17 @@ class SplashDialog(QDialog):
         self.version.setAlignment(Qt.AlignRight)
         self.label.setAlignment(Qt.AlignCenter)
         self.acq_btn = QPushButton("Live acquisition", clicked=self.open_live)
-        self.analysis_btn = QPushButton("Offline analysis", clicked=self.open_analysis)
+        self.analysis_btn = QPushButton("Analysis", clicked=self.open_analysis)
+        self.download_btn = QPushButton("Downloader", clicked=self.open_downloader)
         self.config_btn = QPushButton("Configuration", clicked=self.open_config)
 
         self.layout = QGridLayout()
         self.layout.addWidget(self.label, 0, 0, 1, 3)
         self.layout.addWidget(self.acq_btn, 1, 1)
         self.layout.addWidget(self.analysis_btn, 2, 1)
-        self.layout.addWidget(self.config_btn, 3, 1)
-        self.layout.addWidget(self.version, 4, 2)
+        self.layout.addWidget(self.download_btn, 3, 1)
+        self.layout.addWidget(self.config_btn, 4, 1)
+        self.layout.addWidget(self.version, 5, 2)
 
         self.setLayout(self.layout)
 
@@ -55,3 +58,7 @@ class SplashDialog(QDialog):
     def open_analysis(self):
         self.selected = AnalysisWindow("Data analysis", self.config)
         self.accept()
+
+    def open_downloader(self):
+        download_dialog = DownloadDialog(self.config)
+        download_dialog.exec_()
