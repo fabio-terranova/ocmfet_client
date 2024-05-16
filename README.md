@@ -39,6 +39,7 @@ To install the package, clone the repository and install the package using pip:
 ```sh
 gh repo clone fabio-terranova/ocmfet_client
 cd ocmfet_client
+git submodule update --init --recursive
 pip install .
 ```
 
