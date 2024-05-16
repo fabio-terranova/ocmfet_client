@@ -9,9 +9,9 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtCore import Qt
 
-from gui.widgets.MultiGraph import MultiGraphWidget
-from network.listeners import DataReader
-from utils.processing import DataProcessor
+from ocmfet_client.gui.widgets.MultiGraph import MultiGraphWidget
+from ocmfet_client.network.listeners import DataReader
+from ocmfet_client.utils.processing import DataProcessor
 
 import os
 

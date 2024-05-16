@@ -1,10 +1,13 @@
 import yaml
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QDialog, QGridLayout, QLabel, QPushButton
+from pathlib import Path
 
-from gui.AnalysisWindow import AnalysisWindow
-from gui.dialogs.ConfigDialog import ConfigDialog
-from gui.LiveWindow import LiveWindow
+from ocmfet_client.gui.AnalysisWindow import AnalysisWindow
+from ocmfet_client.gui.dialogs.ConfigDialog import ConfigDialog
+from ocmfet_client.gui.LiveWindow import LiveWindow
+
+config_path = Path(__file__).parent / "../../configs/default.yaml"
 
 
 class SplashDialog(QDialog):
@@ -17,7 +20,7 @@ class SplashDialog(QDialog):
         self.setWindowTitle(title)
         self.version = version
         self.selected = None
-        self.config = yaml.safe_load(open("configs/default.yaml", "r"))
+        self.config = yaml.safe_load(open(config_path, "r"))
         self.init_ui()
 
     def init_ui(self):

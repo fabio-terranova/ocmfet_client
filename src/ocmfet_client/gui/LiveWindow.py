@@ -15,11 +15,11 @@ from PyQt5.QtWidgets import (
     QWidget,
 )
 
-from gui.dialogs.PlotDialog import PlotDialog
-from gui.widgets.Controller import ControllerDialog
-from gui.widgets.Messanger import Messanger
-from network.udp import MsgDataClient
-from utils.formatting import s2hhmmss
+from ocmfet_client.gui.dialogs.PlotDialog import PlotDialog
+from ocmfet_client.gui.widgets.Controller import ControllerDialog
+from ocmfet_client.gui.widgets.Messanger import Messanger
+from ocmfet_client.network.udp import MsgDataClient
+from ocmfet_client.utils.formatting import s2hhmmss
 
 
 class LiveWindow(QMainWindow):

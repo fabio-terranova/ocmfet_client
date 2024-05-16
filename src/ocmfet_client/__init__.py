@@ -10,9 +10,9 @@ import pyqtgraph as pg
 import yaml
 from PyQt5.QtWidgets import QApplication
 
-from gui.dialogs.SplashDialog import SplashDialog
+from ocmfet_client.gui.dialogs.SplashDialog import SplashDialog
 
-__version__ = "2.5"
+__version__ = "2.5.0"
 author = "Fabio Terranova"
 
 win_title = "OCMFET client - {}".format(author)
@@ -33,7 +33,7 @@ def config_pyqtgraph():
     )
 
 
-if __name__ == "__main__":
+def cli():
     # Configure PyQtGraph
     config_pyqtgraph()
 
@@ -61,3 +61,7 @@ if __name__ == "__main__":
     if main:
         main.show()
         app.exec_()
+
+
+if __name__ == "__main__":
+    cli()

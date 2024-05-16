@@ -14,7 +14,7 @@ from PyQt5.QtWidgets import (
     QWidget,
 )
 
-from utils.formatting import sub
+from ocmfet_client.utils.formatting import sub
 
 
 class ControllerDialog(QDialog):

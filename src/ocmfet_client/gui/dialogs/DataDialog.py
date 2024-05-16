@@ -13,7 +13,7 @@ from PyQt5.QtWidgets import (
     QVBoxLayout,
 )
 
-from utils.formatting import bytes2samples
+from ocmfet_client.utils.formatting import bytes2samples
 
 
 class Downloader(QThread):

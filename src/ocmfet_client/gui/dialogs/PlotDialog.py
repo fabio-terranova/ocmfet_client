@@ -13,14 +13,14 @@ from PyQt5.QtWidgets import (
     QVBoxLayout,
 )
 
-from gui.widgets.DataProcessing import DataProcessingWidget
-from gui.widgets.MultiGraph import (
+from ocmfet_client.gui.widgets.DataProcessing import DataProcessingWidget
+from ocmfet_client.gui.widgets.MultiGraph import (
     MultiGraphPSDWidget,
     MultiGraphSpectrogramWidget,
     MultiGraphWidget,
 )
-from utils.formatting import s2string
-from utils.processing import DataProcessor
+from ocmfet_client.utils.formatting import s2string
+from ocmfet_client.utils.processing import DataProcessor
 
 
 class ChannelSelectionDialog(QDialog):
