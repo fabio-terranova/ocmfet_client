@@ -22,14 +22,15 @@ Raspberry Pi.
 
 ### Prerequisites
 
-To install Python 3.11, on Ubuntu, execute the following commands in the terminal:
+To install Python 3.11 and the GitHub CLI, on Ubuntu, execute the following commands in the terminal:
 
 ```sh
 sudo apt update
-sudo apt install python3.11
+sudo apt install python3.11 gh
 ```
 
-On Windows, download the installer from the [official website](https://www.python.org/downloads/).
+On Windows, download the installers from the [official website](https://www.python.org/downloads/) and
+the [official website](https://cli.github.com/).
 
 ### Installing the package
 
