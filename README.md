@@ -71,19 +71,3 @@ pip install hatch
 
 On Windows, follow the instructions on the
 [official website](https://hatch.pypa.io/latest/#installation).
-
-### Making changes
-
-Enter the hatch environment:
-
-```bash
-hatch shell
-```
-
-Install the pre-commit hooks:
-
-```bash
-pre-commit install
-```
-
-Start committing!
