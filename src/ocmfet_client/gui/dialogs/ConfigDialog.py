@@ -105,7 +105,7 @@ class ConfigDialog(QDialog):
             self, "Load configuration", str(config_path), "YAML files (*.yaml)"
         )
         if file:
-            self.config = yaml.safe_load(open(file, "r"))
+            self.config = yaml.safe_load(open(file))
             self.update_config()
 
 

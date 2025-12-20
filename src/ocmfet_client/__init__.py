@@ -15,22 +15,14 @@ from ocmfet_client.gui.dialogs.SplashDialog import SplashDialog
 __version__ = "2.5.0"
 author = "Fabio Terranova"
 
-win_title = "OCMFET client - {}".format(author)
+win_title = f"OCMFET client - {author}"
 
 
 def config_pyqtgraph():
     """
     PyQtGraph configuration
     """
-    pg.setConfigOptions(
-        **{
-            # "useOpenGL": True,
-            # "antialias": True,
-            "background": "w",
-            "foreground": "k",
-            "leftButtonPan": False,
-        }
-    )
+    pg.setConfigOptions(background="w", foreground="k", leftButtonPan=False)
 
 
 def cli():
@@ -46,7 +38,7 @@ def cli():
         if "-c" in sys.argv:
             idx = sys.argv.index("-c")
             config_file = sys.argv[idx + 1]
-            splash.config = yaml.safe_load(open(config_file, "r"))
+            splash.config = yaml.safe_load(open(config_file))
 
         if "-l" in sys.argv:
             splash.open_live()

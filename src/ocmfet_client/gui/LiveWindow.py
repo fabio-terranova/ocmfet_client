@@ -203,10 +203,9 @@ class LiveWindow(QMainWindow):
             elif self.elapsed_time % self.max_record_time_spin_box.value() == 0:
                 self.save_recording()
                 self.send_command("rec")
-        else:
-            if self.elapsed_time % self.max_record_time_spin_box.value() == 0:
-                self.save_recording()
-                self.send_command("rec")
+        elif self.elapsed_time % self.max_record_time_spin_box.value() == 0:
+            self.save_recording()
+            self.send_command("rec")
 
     def send_command(self, command):
         self.udp_client.send_message(command)

@@ -2,11 +2,11 @@ import yaml
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QDialog, QGridLayout, QLabel, QPushButton
 
-from ocmfet_client.utils import config_path
 from ocmfet_client.gui.AnalysisWindow import AnalysisWindow
 from ocmfet_client.gui.dialogs.ConfigDialog import ConfigDialog
 from ocmfet_client.gui.dialogs.DownloadDialog import DownloadDialog
 from ocmfet_client.gui.LiveWindow import LiveWindow
+from ocmfet_client.utils import config_path
 
 
 class SplashDialog(QDialog):
@@ -19,7 +19,7 @@ class SplashDialog(QDialog):
         self.setWindowTitle(title)
         self.version = version
         self.selected = None
-        self.config = yaml.safe_load(open(config_path, "r"))
+        self.config = yaml.safe_load(open(config_path))
         self.init_ui()
 
     def init_ui(self):

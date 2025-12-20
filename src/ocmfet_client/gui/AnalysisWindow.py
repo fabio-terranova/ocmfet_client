@@ -1,19 +1,19 @@
+import os
+
+from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (
+    QComboBox,
     QFileDialog,
+    QGridLayout,
+    QLabel,
     QMainWindow,
     QPushButton,
-    QGridLayout,
     QWidget,
-    QComboBox,
-    QLabel,
 )
-from PyQt5.QtCore import Qt
 
 from ocmfet_client.gui.widgets.MultiGraph import MultiGraphWidget
 from ocmfet_client.network.listeners import DataReader
 from ocmfet_client.utils.processing import DataProcessor
-
-import os
 
 
 class AnalysisWindow(QMainWindow):
@@ -48,6 +48,9 @@ class AnalysisWindow(QMainWindow):
         self.open_file_button = QPushButton("Open file")
         self.open_file_button.clicked.connect(self.open_file)
 
+        self.take_snapshot_button = QPushButton("Take snapshot")
+        self.take_snapshot_button.clicked.connect(self.take_snapshot)
+
         self.layout = QGridLayout()
         self.layout.setColumnStretch(1, 1)
         self.layout.addWidget(self.name_label, 0, 0, 1, 4)
@@ -56,6 +59,7 @@ class AnalysisWindow(QMainWindow):
         self.layout.addWidget(self.files_combo, 2, 1, 1, 1)
         self.layout.addWidget(self.open_folder_button, 2, 2, 1, 1)
         self.layout.addWidget(self.open_file_button, 2, 3, 1, 1)
+        self.layout.addWidget(self.take_snapshot_button, 3, 0, 1, 4)
 
         self.central_widget = QWidget()
         self.central_widget.setLayout(self.layout)
@@ -106,3 +110,27 @@ class AnalysisWindow(QMainWindow):
             self.files_combo.addItem(file)
             self.files_combo.setCurrentIndex(self.files_combo.count() - 1)
             self.update_file(self.files_combo.count() - 1)
+
+    def take_snapshot(self):
+        data = self.data_processor.get_data()
+        x = self.multi_graph.x_values
+
+        # filter data with a low pass filter 5 kHz
+        from scipy.signal import butter, filtfilt
+
+        b, a = butter(2, [10, 2e3], "band", fs=self.fs * 1e3)
+        data = filtfilt(b, a, data)
+
+        from matplotlib import pyplot as plt
+        from matplotlib.ticker import EngFormatter
+
+        plt.style.use("nature.mplstyle")
+
+        fig, ax = plt.subplots()
+        plt.plot(x, data[0])
+
+        plt.xlabel("Time (s)")
+        plt.ylabel("Current (A)")
+        ax.yaxis.set_major_formatter(EngFormatter())
+
+        plt.show()

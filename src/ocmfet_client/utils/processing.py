@@ -10,7 +10,6 @@ from collections import deque
 import numpy as np
 from scipy.signal import filtfilt
 
-
 # Old conversion function, keeping it here for reference
 # def bytes2samples(data, ch_type=2):
 #     """Convert bytes to samples."""

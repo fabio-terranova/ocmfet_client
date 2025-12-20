@@ -65,7 +65,7 @@ class DownloadDialog(QDialog):
         size = int(self.model.itemFromIndex(index.siblingAtColumn(3)).text())
 
         self.progress_dialog = QProgressDialog(self)
-        self.progress_dialog.setLabelText("Downloading {}".format(name))
+        self.progress_dialog.setLabelText(f"Downloading {name}")
         self.progress_dialog.setRange(0, size)
         self.downloader.download_data(name, path, size)
         self.downloader.progress.connect(self.progress_dialog.setValue)

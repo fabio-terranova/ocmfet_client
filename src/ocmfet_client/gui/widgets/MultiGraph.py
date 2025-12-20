@@ -74,7 +74,7 @@ class MultiGraphWidget(pg.GraphicsLayoutWidget):
             self.plot_items[i].setClipToView(True)
             self.plot_items[i].showGrid(x=True, y=True)
             # self.plot_items[i].setRange(yRange=[-10e-6, 10e-6])
-            self.plot_items[i].setTitle(f"<b>({i+1})</b>")
+            self.plot_items[i].setTitle(f"<b>({i + 1})</b>")
 
         self.curves = [self.plot_items[i].plot() for i in range(self.n)]
 
@@ -173,7 +173,7 @@ class MultiGraphPSDWidget(MultiGraphWidget):
     def initUI(self):
         super().initUI()
 
-        for pi, ch in zip(self.plot_items, self.channels):
+        for pi, ch in zip(self.plot_items, self.channels, strict=False):
             pi.setLogMode(x=True, y=True)
             y_unit = ch["labels"]["left"][1]
             labels = {
@@ -219,9 +219,7 @@ class MultiGraphSpectrogramWidget(MultiGraphWidget):
             view = self.addPlot(row=row, col=col)
             img = pg.ImageItem()
             view.addItem(img)
-            view.setLabels(
-                **{"left": ("Frequency", "Hz"), "bottom": ch["labels"]["bottom"]}
-            )
+            view.setLabels(left=("Frequency", "Hz"), bottom=ch["labels"]["bottom"])
 
             self.plot_items.append(view)
             self.images.append(img)

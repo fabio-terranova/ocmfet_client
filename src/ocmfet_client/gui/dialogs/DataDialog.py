@@ -39,7 +39,7 @@ class Downloader(QThread):
             self.file_size = size
             self.udp_client.data_listener.set_bytes_to_emit(int(size / 32))
             self.udp_client.data_listener.start_listening()
-            self.udp_client.send_message("getf {}".format(path))
+            self.udp_client.send_message(f"getf {path}")
             self.udp_client.data_listener.received_data.connect(
                 lambda data: self.write_to_file(file_name, data)
             )
@@ -100,7 +100,7 @@ class DataDialog(QDialog):
         size = int(self.model.itemFromIndex(index.siblingAtColumn(3)).text())
 
         self.progress_dialog = QProgressDialog(self)
-        self.progress_dialog.setLabelText("Downloading {}".format(name))
+        self.progress_dialog.setLabelText(f"Downloading {name}")
         self.progress_dialog.setRange(0, size)
         self.downloader.download_data(name, path, size)
         self.downloader.progress.connect(self.progress_dialog.setValue)
