@@ -6,17 +6,9 @@ server application ([ocmfet-server-zero](https://github.com/fabio-terranova/ocmf
 [ocmfet-server-feedback](https://github.com/fabio-terranova/ocmfet-server-feedback)) running on the
 Raspberry Pi.
 
-## Index
+## Screenshot
 
-- [OCMFET client](#ocmfet-client)
-  - [Index](#index)
-  - [Installation](#installation)
-    - [Prerequisites](#prerequisites)
-    - [Installing the package](#installing-the-package)
-    - [Usage](#usage)
-  - [Development](#development)
-    - [Install Hatch](#install-hatch)
-    - [Making changes](#making-changes)
+<img width="2073" height="1177" alt="image" src="https://github.com/user-attachments/assets/8cdc7c9f-91f6-43e1-bb64-0ab82492610f" />
 
 ## Installation
 
